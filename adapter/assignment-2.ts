@@ -3,54 +3,68 @@ import assignment1 from "./assignment-1";
 export type BookID = string;
 
 export interface Book {
-    id?: BookID,
-    name: string,
-    author: string,
-    description: string,
-    price: number,
-    image: string,
-};
+    id?: BookID;
+    name: string;
+    author: string;
+    description: string;
+    price: number;
+    image: string;
+}
 
-async function listBooks(filters?: Array<{from?: number, to?: number}>) : Promise<Book[]>{
-    return assignment1.listBooks(filters)
+const API_BASE = "http://localhost:3000";
+
+async function listBooks(filters?: Array<{ from?: number; to?: number }>): Promise<Book[]> {
+    return assignment1.listBooks(filters);
 }
 
 async function createOrUpdateBook(book: Book): Promise<BookID> {
-    // TODO: Implement this function to create or update a book via the API
-    //
-    // Requirements:
-    // - If the book has an id, send a PUT request to update the existing book
-    //   URL: http://localhost:3000/books/{id}
-    // - If the book does not have an id, send a POST request to create a new book
-    //   URL: http://localhost:3000/books
-    // - Send the book data as JSON in the request body
-    // - On success, return the book's id from the response
-    // - On failure, throw an Error with a descriptive message
-    //
-    // Hints:
-    // - Use the fetch API to make HTTP requests
-    // - Set the 'Content-Type' header to 'application/json'
-    // - Use JSON.stringify() to convert the book object to a JSON string
-    // - Check result.ok to determine if the request was successful
-    // - Parse the response with result.json() to get the id
+    const isUpdate = Boolean(book.id);
+    const url = isUpdate ? API_BASE + "/books/" + book.id : API_BASE + "/books";
+    const method = isUpdate ? "PUT" : "POST";
 
-    throw new Error("Not implemented");
+    const response = await fetch(url, {
+        method: method,
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(book)
+    });
+
+    if (!response.ok) {
+        let errorMessage = "Failed to " + (isUpdate ? "update" : "create") + " book: HTTP " + response.status;
+        try {
+            const errData: any = await response.json();
+            if (errData && errData.error) {
+                errorMessage = errData.error;
+            }
+        } catch {
+            // response was not JSON
+        }
+        throw new Error(errorMessage);
+    }
+
+    const data: any = await response.json();
+    return data.id as BookID;
 }
 
 async function removeBook(bookId: BookID): Promise<void> {
-    // TODO: Implement this function to delete a book via the API
-    //
-    // Requirements:
-    // - Send a DELETE request to http://localhost:3000/books/{bookId}
-    // - On success (status 200 or 204), return without throwing
-    // - On failure, throw an Error with a descriptive message
-    //
-    // Hints:
-    // - Use the fetch API with method: 'DELETE'
-    // - A successful delete typically returns status 204 (No Content)
-    // - Check result.ok or result.status to determine success
+    const url = API_BASE + "/books/" + bookId;
+    const response = await fetch(url, {
+        method: "DELETE"
+    });
 
-    throw new Error("Not implemented");
+    if (!response.ok && response.status !== 204) {
+        let errorMessage = "Failed to delete book: HTTP " + response.status;
+        try {
+            const errData: any = await response.json();
+            if (errData && errData.error) {
+                errorMessage = errData.error;
+            }
+        } catch {
+            // response was not JSON
+        }
+        throw new Error(errorMessage);
+    }
 }
 
 const assignment = "assignment-2";
