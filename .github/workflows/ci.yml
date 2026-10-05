@@ -1,0 +1,21 @@
+name: McMasterful Books Backend CI
+on: [push, pull_request]
+jobs:
+  format_and_lint:
+    name: Format and Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with: { node-version: '18' }
+      - run: npm install
+      - run: npm run lint
+  check_types:
+    name: Check Types
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with: { node-version: '18' }
+      - run: npm install
+      - run: npm run check-types
