@@ -1,89 +1,63 @@
 import Router from '@koa/router';
-import { Book } from '../../adapter/assignment-1';
 import { getDatabase } from '../db';
+import { Context } from 'koa';
 
 const listRouter = new Router();
 
-listRouter.get('/books', async (ctx) => {
-  const filters = ctx.query.filters as Array<{ from?: string, to?: string }> | undefined;
-
+listRouter.get('/books', async (ctx: Context) => {
   try {
-    let bookList = await getBooksFromDatabase();
+    const db = getDatabase();
+    const { name, author, priceFrom, priceTo } = ctx.query;
 
-    // Uncomment to Apply filters
-    // if (filters && Array.isArray(filters) && filters.length > 0) {
-    //   if (!validateFilters(filters)) {
-    //     ctx.status = 400;
-    //     ctx.body = { error: 'Invalid filters. Each filter must have valid "from" and "to" numbers where from <= to.' };
-    //     return;
-    //   }
+    // Start with an empty query object
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const query: any = {};
+    const priceQuery: any = {};
 
-    //   bookList = filterBooks(bookList, filters);
-    // }
+    // Dynamically add filters to the query object if they exist in the URL
 
-    ctx.body = bookList;
+    // Add a case-insensitive search for 'name'
+    if (typeof name === 'string') {
+      query.name = { $regex: name, $options: 'i' };
+    }
+
+    // Add a case-insensitive search for 'author'
+    if (typeof author === 'string') {
+      query.author = { $regex: author, $options: 'i' };
+    }
+
+    // Build the price part of the query ($gte = greater than or equal to)
+    if (typeof priceFrom === 'string' && !isNaN(parseFloat(priceFrom))) {
+      priceQuery.$gte = parseFloat(priceFrom);
+    }
+
+    // Build the price part of the query ($lte = less than or equal to)
+    if (typeof priceTo === 'string' && !isNaN(parseFloat(priceTo))) {
+      priceQuery.$lte = parseFloat(priceTo);
+    }
+
+    // If a price filter was added, attach it to the main query
+    if (Object.keys(priceQuery).length > 0) {
+      query.price = priceQuery;
+    }
+
+    // Pass the dynamically built query object to the find() method
+    const books = await db.collection('books').find(query).toArray();
+
+    // Format the books for the response
+    const formattedBooks = books.map((b) => ({
+        ...b,
+        id: b._id.toString(),
+    }));
+
+    ctx.status = 200;
+    ctx.body = formattedBooks;
+
   } catch (error) {
     ctx.status = 500;
-    ctx.body = { error: `Failed to fetch books due to: ${error}` };
+    ctx.body = { error: 'Failed to fetch books' };
+    console.error(error);
   }
 });
-
-function validateFilters(filters: any): boolean {
-  // Check if filters exist and are an array
-  if (!filters || !Array.isArray(filters)) {
-    return false;
-  }
-
-  // Check each filter object in the array
-  return filters.every(filter => {
-    const from = filter.from !== undefined ? parseFloat(filter.from) : undefined;
-    const to = filter.to !== undefined ? parseFloat(filter.to) : undefined;
-
-    // If from is provided, it must be a valid number
-    if (from !== undefined && isNaN(from)) {
-      return false;
-    }
-
-    // If to is provided, it must be a valid number
-    if (to !== undefined && isNaN(to)) {
-      return false;
-    }
-
-    // If both are provided, from must be <= to
-    if (from !== undefined && to !== undefined && from > to) {
-      return false;
-    }
-
-    return true;
-  });
-}
-
-async function getBooksFromDatabase(): Promise<(Book & { id: string })[]> {
-  const db = getDatabase();
-  const books = await db.collection('books').find({}).toArray();
-  return books.map(doc => ({
-    id: doc._id.toString(),
-    name: doc.name,
-    author: doc.author,
-    description: doc.description,
-    price: doc.price,
-    image: doc.image
-  }));
-}
-
-// Filter books by price range - a book matches if it falls within ANY of the filter ranges
-function filterBooks(bookList: Book[], filters: Array<{ from?: string, to?: string }>): Book[] {
-  return bookList.filter(book =>
-    filters.some(filter => {
-      const from = filter.from !== undefined ? parseFloat(filter.from) : undefined;
-      const to = filter.to !== undefined ? parseFloat(filter.to) : undefined;
-
-      const matchesFrom = from === undefined || book.price >= from;
-      const matchesTo = to === undefined || book.price <= to;
-
-      return matchesFrom && matchesTo;
-    })
-  );
-}
 
 export default listRouter;
