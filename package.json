@@ -1,7 +1,7 @@
 {
-  "name": "assignment-template",
+  "name": "assignment-3",
   "version": "1.0.0",
-  "description": "This is a template repository for the first assignment in BVD 103 at McMaster Continuing Education.",
+  "description": "This is a template repository for the third assignment in BVD 103 at McMaster Continuing Education.",
   "main": "src/server.ts",
   "scripts": {
     "start-server": "tsx ./src/server.ts",
