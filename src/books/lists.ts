@@ -10,7 +10,7 @@ listRouter.get('/books', async (ctx: Context) => {
     const { name, author, priceFrom, priceTo } = ctx.query;
 
     // Start with an empty query object
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const query: any = {};
     const priceQuery: any = {};
 
@@ -46,13 +46,12 @@ listRouter.get('/books', async (ctx: Context) => {
 
     // Format the books for the response
     const formattedBooks = books.map((b) => ({
-        ...b,
-        id: b._id.toString(),
+      ...b,
+      id: b._id.toString(),
     }));
 
     ctx.status = 200;
     ctx.body = formattedBooks;
-
   } catch (error) {
     ctx.status = 500;
     ctx.body = { error: 'Failed to fetch books' };
