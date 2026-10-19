@@ -1,0 +1,97 @@
+import Router from '@koa/router';
+import { InMemoryWarehouse } from './warehouse_data';
+import { fulfilOrder } from './fulfil_order';
+
+const warehouseRouter = new Router();
+const warehouse = new InMemoryWarehouse();
+
+warehouseRouter.post('/warehouse/shelves', async (ctx) => {
+  const body = ctx.request.body as {
+    bookId?: string;
+    numberOfBooks?: number;
+    shelf?: string;
+  };
+
+  if (
+    typeof body.bookId !== 'string' ||
+    typeof body.shelf !== 'string' ||
+    typeof body.numberOfBooks !== 'number' ||
+    body.numberOfBooks <= 0
+  ) {
+    ctx.status = 400;
+    ctx.body = { error: 'Invalid shelf placement' };
+    return;
+  }
+
+  await warehouse.placeBookOnShelf(body.bookId, body.shelf, body.numberOfBooks);
+
+  ctx.status = 204;
+});
+
+warehouseRouter.get('/warehouse/books/:bookId', async (ctx) => {
+  const { bookId } = ctx.params;
+
+  const copies = await warehouse.getCopies(bookId);
+
+  ctx.status = 200;
+  ctx.body = Object.entries(copies).map(([shelf, count]) => ({
+    shelf,
+    count,
+  }));
+});
+
+warehouseRouter.post('/orders', async (ctx) => {
+  const body = ctx.request.body as {
+    books?: Record<string, number>;
+  };
+
+  if (!body.books || typeof body.books !== 'object') {
+    ctx.status = 400;
+    ctx.body = { error: 'Invalid order' };
+    return;
+  }
+
+  const orderId = await warehouse.placeOrder(body.books);
+
+  ctx.status = 201;
+  ctx.body = { orderId };
+});
+
+warehouseRouter.get('/orders', async (ctx) => {
+  const orders = await warehouse.listOrders();
+
+  ctx.status = 200;
+  ctx.body = orders;
+});
+
+warehouseRouter.post('/orders/:orderId/fulfil', async (ctx) => {
+  const { orderId } = ctx.params;
+
+  const body = ctx.request.body as {
+    booksFulfilled?: Array<{
+      book: string;
+      shelf: string;
+      numberOfBooks: number;
+    }>;
+  };
+
+  if (!Array.isArray(body.booksFulfilled)) {
+    ctx.status = 400;
+    ctx.body = { error: 'Invalid fulfilment request' };
+    return;
+  }
+
+  try {
+    await fulfilOrder(orderId, body.booksFulfilled, warehouse);
+
+    ctx.status = 204;
+  } catch (error) {
+    ctx.status = 400;
+    ctx.body = {
+      error: error instanceof Error ? error.message : 'Failed to fulfil order',
+    };
+  }
+});
+
+export { warehouse };
+export default warehouseRouter;

@@ -3,20 +3,29 @@ import cors from '@koa/cors';
 import bodyParser from 'koa-bodyparser';
 import qs from 'koa-qs';
 import bookRoutes from './books/book_routes';
+import warehouseRoutes from './warehouse/warehouse_routes';
 import { connectToDatabase } from './db';
 
 const app = new Koa();
+
 qs(app);
 
 app.use(cors());
 app.use(bodyParser());
+
+// Book routes
 app.use(bookRoutes.allowedMethods());
 app.use(bookRoutes.routes());
+
+// Warehouse and order routes
+app.use(warehouseRoutes.allowedMethods());
+app.use(warehouseRoutes.routes());
 
 const PORT = 3000;
 
 async function startServer() {
   await connectToDatabase();
+
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
