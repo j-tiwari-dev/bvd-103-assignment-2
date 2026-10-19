@@ -7,7 +7,9 @@
     "start-server": "tsx ./src/server.ts",
     "lint": "eslint",
     "lint:fix": "eslint . --ext .ts --fix",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test": "vitest",
+    "test:ci": "vitest run"
   },
   "keywords": [],
   "author": "",
@@ -37,9 +39,11 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
     "globals": "^17.13.0",
+    "mongodb-memory-server": "^11.3.0",
     "prettier": "^3.9.9",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.71.1"
+    "typescript-eslint": "^8.71.1",
+    "vitest": "^5.0.5"
   }
 }
