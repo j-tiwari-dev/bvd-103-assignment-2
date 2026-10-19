@@ -34,6 +34,43 @@ describe('lookupBookById', () => {
     });
   });
 
+  test('returns the current stock level for a book', async () => {
+    const bookId = new ObjectId();
+
+    const fakeBook = {
+      _id: bookId,
+      name: 'Stocked Book',
+      author: 'Test Author',
+      description: 'A book with warehouse stock',
+      price: 24.99,
+      image: 'test.jpg',
+    };
+
+    const fakeDatabase = {
+      books: {
+        findOne: async () => fakeBook,
+      },
+    };
+
+    const getStock = async (): Promise<number> => 8;
+
+    const result = await lookupBookById(
+      bookId.toString(),
+      fakeDatabase,
+      getStock
+    );
+
+    expect(result).toEqual({
+      id: bookId.toString(),
+      name: 'Stocked Book',
+      author: 'Test Author',
+      description: 'A book with warehouse stock',
+      price: 24.99,
+      image: 'test.jpg',
+      stock: 8,
+    });
+  });
+
   test('returns false when the book does not exist', async () => {
     const fakeDatabase = {
       books: {

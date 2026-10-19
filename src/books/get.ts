@@ -1,6 +1,7 @@
 import Router from '@koa/router';
 import { ObjectId, type Collection } from 'mongodb';
 import { getDatabase } from '../db';
+import { DatabaseWarehouse } from '../warehouse/warehouse_database';
 
 interface DatabaseBook {
   _id: ObjectId;
@@ -27,7 +28,8 @@ export interface Book {
 
 export async function lookupBookById(
   bookId: string,
-  database: BookDatabase
+  database: BookDatabase,
+  getStock: (bookId: string) => Promise<number> = async () => 0
 ): Promise<Book | false> {
   if (!ObjectId.isValid(bookId)) {
     return false;
@@ -41,6 +43,8 @@ export async function lookupBookById(
     return false;
   }
 
+  const stock = await getStock(bookId);
+
   return {
     id: book._id.toString(),
     name: book.name,
@@ -48,8 +52,12 @@ export async function lookupBookById(
     description: book.description,
     price: book.price,
     image: book.image,
-    stock: 0,
+    stock,
   };
+}
+
+function calculateTotalStock(copies: Record<string, number>): number {
+  return Object.values(copies).reduce((total, count) => total + count, 0);
 }
 
 const getRouter = new Router();
@@ -59,19 +67,34 @@ getRouter.get('/books/:id', async (ctx) => {
 
   if (!ObjectId.isValid(id)) {
     ctx.status = 400;
-    ctx.body = { error: 'Invalid book ID format' };
+    ctx.body = {
+      error: 'Invalid book ID format',
+    };
     return;
   }
 
-  const db = getDatabase();
+  const bookDatabase = getDatabase();
 
-  const book = await lookupBookById(id, {
-    books: db.collection<DatabaseBook>('books'),
-  });
+  const warehouseDatabase = bookDatabase.client.db('mcmasterful-warehouse');
+
+  const warehouse = new DatabaseWarehouse(warehouseDatabase);
+
+  const book = await lookupBookById(
+    id,
+    {
+      books: bookDatabase.collection<DatabaseBook>('books'),
+    },
+    async (bookId) => {
+      const copies = await warehouse.getCopies(bookId);
+      return calculateTotalStock(copies);
+    }
+  );
 
   if (!book) {
     ctx.status = 404;
-    ctx.body = { error: 'Book not found' };
+    ctx.body = {
+      error: 'Book not found',
+    };
     return;
   }
 

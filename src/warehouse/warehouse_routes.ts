@@ -1,12 +1,19 @@
 import Router from '@koa/router';
 import { ObjectId } from 'mongodb';
 import { getDatabase } from '../db';
-import { InMemoryWarehouse } from './warehouse_data';
+import { DatabaseWarehouse } from './warehouse_database';
 import { fulfilOrder } from './fulfil_order';
 import { placeOrder } from './place_order';
 
 const warehouseRouter = new Router();
-const warehouse = new InMemoryWarehouse();
+
+function getWarehouse(): DatabaseWarehouse {
+  const db = getDatabase();
+
+  const warehouseDatabase = db.client.db('mcmasterful-warehouse');
+
+  return new DatabaseWarehouse(warehouseDatabase);
+}
 
 warehouseRouter.post('/warehouse/shelves', async (ctx) => {
   const body = ctx.request.body as {
@@ -26,6 +33,8 @@ warehouseRouter.post('/warehouse/shelves', async (ctx) => {
     return;
   }
 
+  const warehouse = getWarehouse();
+
   await warehouse.placeBookOnShelf(body.bookId, body.shelf, body.numberOfBooks);
 
   ctx.status = 204;
@@ -34,9 +43,12 @@ warehouseRouter.post('/warehouse/shelves', async (ctx) => {
 warehouseRouter.get('/warehouse/books/:bookId', async (ctx) => {
   const { bookId } = ctx.params;
 
+  const warehouse = getWarehouse();
+
   const copies = await warehouse.getCopies(bookId);
 
   ctx.status = 200;
+
   ctx.body = Object.entries(copies).map(([shelf, count]) => ({
     shelf,
     count,
@@ -48,13 +60,19 @@ warehouseRouter.post('/orders', async (ctx) => {
     books?: Record<string, number>;
   };
 
-  if (!body.books || typeof body.books !== 'object') {
+  if (
+    !body.books ||
+    typeof body.books !== 'object' ||
+    Array.isArray(body.books)
+  ) {
     ctx.status = 400;
     ctx.body = { error: 'Invalid order' };
     return;
   }
 
   try {
+    const warehouse = getWarehouse();
+
     const result = await placeOrder(body.books, warehouse, async (bookId) => {
       if (!ObjectId.isValid(bookId)) {
         return false;
@@ -73,6 +91,7 @@ warehouseRouter.post('/orders', async (ctx) => {
     ctx.body = result;
   } catch (error) {
     ctx.status = 400;
+
     ctx.body = {
       error: error instanceof Error ? error.message : 'Failed to place order',
     };
@@ -80,6 +99,8 @@ warehouseRouter.post('/orders', async (ctx) => {
 });
 
 warehouseRouter.get('/orders', async (ctx) => {
+  const warehouse = getWarehouse();
+
   const orders = await warehouse.listOrders();
 
   ctx.status = 200;
@@ -104,16 +125,18 @@ warehouseRouter.post('/orders/:orderId/fulfil', async (ctx) => {
   }
 
   try {
+    const warehouse = getWarehouse();
+
     await fulfilOrder(orderId, body.booksFulfilled, warehouse);
 
     ctx.status = 204;
   } catch (error) {
     ctx.status = 400;
+
     ctx.body = {
       error: error instanceof Error ? error.message : 'Failed to fulfil order',
     };
   }
 });
 
-export { warehouse };
 export default warehouseRouter;
