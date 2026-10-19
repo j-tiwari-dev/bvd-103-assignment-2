@@ -2,17 +2,18 @@ import Router from '@koa/router';
 import listRouter from './lists';
 import createRouter from './create';
 import deleteRouter from './delete';
+import getRouter from './get';
 
 const router = new Router();
 
-// Mount the sub-routers
 router.use(listRouter.routes());
 router.use(createRouter.routes());
 router.use(deleteRouter.routes());
+router.use(getRouter.routes());
 
-// Optional: Mount the allowedMethods for all sub-routers at once
 router.use(listRouter.allowedMethods());
 router.use(createRouter.allowedMethods());
 router.use(deleteRouter.allowedMethods());
+router.use(getRouter.allowedMethods());
 
 export default router;

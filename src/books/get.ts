@@ -1,4 +1,6 @@
+import Router from '@koa/router';
 import { ObjectId, type Collection } from 'mongodb';
+import { getDatabase } from '../db';
 
 interface DatabaseBook {
   _id: ObjectId;
@@ -49,3 +51,32 @@ export async function lookupBookById(
     stock: 0,
   };
 }
+
+const getRouter = new Router();
+
+getRouter.get('/books/:id', async (ctx) => {
+  const { id } = ctx.params;
+
+  if (!ObjectId.isValid(id)) {
+    ctx.status = 400;
+    ctx.body = { error: 'Invalid book ID format' };
+    return;
+  }
+
+  const db = getDatabase();
+
+  const book = await lookupBookById(id, {
+    books: db.collection<DatabaseBook>('books'),
+  });
+
+  if (!book) {
+    ctx.status = 404;
+    ctx.body = { error: 'Book not found' };
+    return;
+  }
+
+  ctx.status = 200;
+  ctx.body = book;
+});
+
+export default getRouter;
