@@ -1,6 +1,9 @@
 import Router from '@koa/router';
+import { ObjectId } from 'mongodb';
+import { getDatabase } from '../db';
 import { InMemoryWarehouse } from './warehouse_data';
 import { fulfilOrder } from './fulfil_order';
+import { placeOrder } from './place_order';
 
 const warehouseRouter = new Router();
 const warehouse = new InMemoryWarehouse();
@@ -51,10 +54,29 @@ warehouseRouter.post('/orders', async (ctx) => {
     return;
   }
 
-  const orderId = await warehouse.placeOrder(body.books);
+  try {
+    const result = await placeOrder(body.books, warehouse, async (bookId) => {
+      if (!ObjectId.isValid(bookId)) {
+        return false;
+      }
 
-  ctx.status = 201;
-  ctx.body = { orderId };
+      const db = getDatabase();
+
+      const book = await db.collection('books').findOne({
+        _id: new ObjectId(bookId),
+      });
+
+      return book !== null;
+    });
+
+    ctx.status = 201;
+    ctx.body = result;
+  } catch (error) {
+    ctx.status = 400;
+    ctx.body = {
+      error: error instanceof Error ? error.message : 'Failed to place order',
+    };
+  }
 });
 
 warehouseRouter.get('/orders', async (ctx) => {
