@@ -53,3 +53,91 @@ describe('InMemoryWarehouse', () => {
     expect(copies).toEqual({});
   });
 });
+
+describe('InMemoryWarehouse orders', () => {
+  test('places and retrieves an order', async () => {
+    const warehouse = new InMemoryWarehouse();
+
+    const orderId = await warehouse.placeOrder({
+      'book-1': 2,
+      'book-2': 1,
+    });
+
+    const order = await warehouse.getOrder(orderId);
+
+    expect(order).toEqual({
+      'book-1': 2,
+      'book-2': 1,
+    });
+  });
+
+  test('lists current orders', async () => {
+    const warehouse = new InMemoryWarehouse();
+
+    const orderId = await warehouse.placeOrder({
+      'book-1': 3,
+    });
+
+    const orders = await warehouse.listOrders();
+
+    expect(orders).toEqual([
+      {
+        orderId,
+        books: {
+          'book-1': 3,
+        },
+      },
+    ]);
+  });
+
+  test('supports multiple orders', async () => {
+    const warehouse = new InMemoryWarehouse();
+
+    const firstOrderId = await warehouse.placeOrder({
+      'book-1': 2,
+    });
+
+    const secondOrderId = await warehouse.placeOrder({
+      'book-2': 4,
+    });
+
+    const orders = await warehouse.listOrders();
+
+    expect(orders).toEqual([
+      {
+        orderId: firstOrderId,
+        books: {
+          'book-1': 2,
+        },
+      },
+      {
+        orderId: secondOrderId,
+        books: {
+          'book-2': 4,
+        },
+      },
+    ]);
+  });
+
+  test('returns false when an order does not exist', async () => {
+    const warehouse = new InMemoryWarehouse();
+
+    const order = await warehouse.getOrder('unknown-order');
+
+    expect(order).toBe(false);
+  });
+
+  test('removes a completed order', async () => {
+    const warehouse = new InMemoryWarehouse();
+
+    const orderId = await warehouse.placeOrder({
+      'book-1': 2,
+    });
+
+    await warehouse.removeOrder(orderId);
+
+    const order = await warehouse.getOrder(orderId);
+
+    expect(order).toBe(false);
+  });
+});
