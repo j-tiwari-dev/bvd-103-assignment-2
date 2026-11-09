@@ -10,7 +10,7 @@
     "check-types": "tsc --noEmit",
     "test": "vitest run src",
     "test:ci": "vitest run src",
-    "test:api": "vitest run api-tests",
+    "test:api": "vitest run --config vitest.api.config.mts",
     "swagger": "tsoa spec",
     "routes": "tsoa routes",
     "generate-sdk": "openapi-generator-cli generate -i build/swagger.json -g typescript-fetch -o generated-client"
