@@ -1,0 +1,456 @@
+{
+	"openapi": "3.0.0",
+	"components": {
+		"examples": {},
+		"headers": {},
+		"parameters": {},
+		"requestBodies": {},
+		"responses": {},
+		"schemas": {
+			"PlaceBooksRequest": {
+				"properties": {
+					"bookId": {
+						"type": "string"
+					},
+					"numberOfBooks": {
+						"type": "number",
+						"format": "double"
+					},
+					"shelf": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"bookId",
+					"numberOfBooks",
+					"shelf"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ShelfResponse": {
+				"properties": {
+					"shelf": {
+						"type": "string"
+					},
+					"count": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"shelf",
+					"count"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PlaceOrderResponse": {
+				"properties": {
+					"orderId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"orderId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Record_string.number_": {
+				"properties": {},
+				"additionalProperties": {
+					"type": "number",
+					"format": "double"
+				},
+				"type": "object",
+				"description": "Construct a type with a set of properties K of type T"
+			},
+			"PlaceOrderRequest": {
+				"properties": {
+					"books": {
+						"$ref": "#/components/schemas/Record_string.number_"
+					}
+				},
+				"required": [
+					"books"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"OrderResponse": {
+				"properties": {
+					"orderId": {
+						"type": "string"
+					},
+					"books": {
+						"$ref": "#/components/schemas/Record_string.number_"
+					}
+				},
+				"required": [
+					"orderId",
+					"books"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"FulfilledBook": {
+				"properties": {
+					"book": {
+						"type": "string"
+					},
+					"shelf": {
+						"type": "string"
+					},
+					"numberOfBooks": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"book",
+					"shelf",
+					"numberOfBooks"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"FulfilOrderRequest": {
+				"properties": {
+					"booksFulfilled": {
+						"items": {
+							"$ref": "#/components/schemas/FulfilledBook"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"booksFulfilled"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"BookResponse": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"author": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"price": {
+						"type": "number",
+						"format": "double"
+					},
+					"image": {
+						"type": "string"
+					},
+					"stock": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"id",
+					"name",
+					"author",
+					"description",
+					"price",
+					"image",
+					"stock"
+				],
+				"type": "object",
+				"additionalProperties": false
+			}
+		},
+		"securitySchemes": {}
+	},
+	"info": {
+		"title": "assignment-4",
+		"version": "1.0.0",
+		"description": "This is a template repository for the fourth assignment in BVD 103 at McMaster Continuing Education.",
+		"license": {
+			"name": "ISC"
+		},
+		"contact": {}
+	},
+	"paths": {
+		"/warehouse/shelves": {
+			"post": {
+				"operationId": "PlaceBooksOnShelf",
+				"responses": {
+					"204": {
+						"description": "Books placed on shelf"
+					}
+				},
+				"tags": [
+					"Warehouse"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PlaceBooksRequest"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/warehouse/books/{bookId}": {
+			"get": {
+				"operationId": "FindBookOnShelf",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/ShelfResponse"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Warehouse"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "bookId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/orders": {
+			"post": {
+				"operationId": "CreateOrder",
+				"responses": {
+					"201": {
+						"description": "Order created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PlaceOrderResponse"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Orders"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PlaceOrderRequest"
+							}
+						}
+					}
+				}
+			},
+			"get": {
+				"operationId": "ListOrders",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/OrderResponse"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Orders"
+				],
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/orders/{orderId}/fulfil": {
+			"post": {
+				"operationId": "FulfilOrder",
+				"responses": {
+					"204": {
+						"description": "Order fulfilled"
+					}
+				},
+				"tags": [
+					"Orders"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "orderId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/FulfilOrderRequest"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/health": {
+			"get": {
+				"operationId": "GetHealth",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"status": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"status"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/books": {
+			"get": {
+				"operationId": "ListBooks",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/BookResponse"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Books"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "name",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "author",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "priceFrom",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "priceTo",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/books/{id}": {
+			"get": {
+				"operationId": "GetBookById",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BookResponse"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Books"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		}
+	},
+	"servers": [
+		{
+			"url": "/"
+		}
+	]
+}

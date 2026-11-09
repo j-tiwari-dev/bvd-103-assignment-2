@@ -1,38 +1,136 @@
 name: McMasterful Books Backend CI
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
 
 jobs:
   format_and_lint:
     name: Format and Lint
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: npm install
+          cache: npm
+
+      - run: npm ci
       - run: npm run lint
 
   check_types:
     name: Check Types
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: npm install
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - run: npm ci
+      - run: npm run swagger
+      - run: npm run routes
+      - run: npm run generate-sdk
       - run: npm run check-types
 
-  test-warehouse:
-    name: Test Warehouse
+  unit_tests:
+    name: Unit and Warehouse Tests
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: npm install
+          cache: npm
+
+      - run: npm ci
       - run: npm run test:ci
-      
+
+  sdk_api_tests:
+    name: Generated SDK API Tests
+    runs-on: ubuntu-latest
+
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      MONGODB_URL: mongodb://localhost:27017
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - run: npm ci
+
+      - name: Generate OpenAPI specification
+        run: npm run swagger
+
+      - name: Generate tsoa routes
+        run: npm run routes
+
+      - name: Generate TypeScript SDK
+        run: npm run generate-sdk
+
+      - name: Start backend
+        run: |
+          npm run start-server > server.log 2>&1 &
+          echo $! > server.pid
+
+      - name: Wait for backend
+        run: |
+          for attempt in {1..30}; do
+            if curl --fail --silent http://localhost:3000/health > /dev/null; then
+              echo "Backend is ready"
+              exit 0
+            fi
+
+            echo "Waiting for backend: attempt ${attempt}/30"
+            sleep 2
+          done
+
+          echo "Backend did not start"
+          cat server.log
+          exit 1
+
+      - name: Run generated SDK API tests
+        run: npm run test:api
+
+      - name: Show backend log if API tests fail
+        if: failure()
+        run: cat server.log
+
+      - name: Stop backend
+        if: always()
+        run: |
+          if [ -f server.pid ]; then
+            kill "$(cat server.pid)" || true
+          fi
