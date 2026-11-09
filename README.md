@@ -1,31 +1,48 @@
-# bvd-103-assignment-2-template
+# McMasterful Books - Assignment 5
 
-This is a template repository for the second assignment in BVD 103 at McMaster Continuing Education.
+## Features
 
-## Push to GitHub from the dev container
+- Koa REST API
+- MongoDB persistence
+- Warehouse inventory and shelf management
+- Book ordering and fulfilment
+- tsoa OpenAPI generation
+- Swagger UI
+- Generated TypeScript SDK
+- Vitest unit tests
+- Generated-SDK API integration tests
+- GitHub Actions CI
 
-The dev container includes the GitHub CLI (`gh`). Git uses your `gh` login for
-`github.com` over HTTPS, so `git push`, `git pull` and lazygit work without
-asking for a password.
+## Install
 
-Log in once, in a terminal inside the dev container:
+npm install
 
-```sh
-gh auth login --hostname github.com --git-protocol https --web
-```
+## Generate OpenAPI
 
-1. `gh` prints a one-time code.
-2. Open https://github.com/login/device in a browser on your computer and
-   enter the code.
-3. Check the result with `gh auth status`.
+npm run swagger
+npm run routes
 
-Your remote must use HTTPS. Check it with `git remote -v`. If it starts with
-`git@github.com:`, switch it:
+## Generate SDK
 
-```sh
-git remote set-url origin https://github.com/<your-account>/<your-repo>.git
-```
+npm run generate-sdk
 
-The login is kept in a Docker volume, so it survives container rebuilds.
-Running `docker compose down -v` deletes the volume, and you will need to log
-in again.
+## Run Server
+
+npm run start-server
+
+Swagger UI:
+http://localhost:3000/docs
+
+## Testing
+
+Unit tests:
+npm run test:ci
+
+Generated SDK API tests:
+npm run test:api
+
+Type checking:
+npm run check-types
+
+Lint:
+npm run lint
