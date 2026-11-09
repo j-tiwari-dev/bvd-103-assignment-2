@@ -1,8 +1,8 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * assignment-4
- * This is a template repository for the fourth assignment in BVD 103 at McMaster Continuing Education.
+ * assignment-5
+ * BVD 103 Assignment 5 backend API with OpenAPI documentation, generated TypeScript SDK, warehouse inventory, orders, and automated testing.
  *
  * The version of the OpenAPI document: 1.0.0
  * 

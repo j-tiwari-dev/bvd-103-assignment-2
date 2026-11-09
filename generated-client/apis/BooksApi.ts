@@ -1,8 +1,8 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * assignment-4
- * This is a template repository for the fourth assignment in BVD 103 at McMaster Continuing Education.
+ * assignment-5
+ * BVD 103 Assignment 5 backend API with OpenAPI documentation, generated TypeScript SDK, warehouse inventory, orders, and automated testing.
  *
  * The version of the OpenAPI document: 1.0.0
  * 
@@ -14,10 +14,34 @@
 
 import * as runtime from '../runtime';
 import {
+    type BookIdResponse,
+    BookIdResponseFromJSON,
+    BookIdResponseToJSON,
+} from '../models/BookIdResponse';
+import {
+    type BookInput,
+    BookInputFromJSON,
+    BookInputToJSON,
+} from '../models/BookInput';
+import {
     type BookResponse,
     BookResponseFromJSON,
     BookResponseToJSON,
 } from '../models/BookResponse';
+
+export interface CreateBookRequest {
+    /**
+     * 
+     */
+    bookInput: BookInput;
+}
+
+export interface DeleteBookRequest {
+    /**
+     * 
+     */
+    id: string;
+}
 
 export interface GetBookByIdRequest {
     /**
@@ -45,10 +69,108 @@ export interface ListBooksRequest {
     priceTo?: number;
 }
 
+export interface UpdateBookRequest {
+    /**
+     * 
+     */
+    id: string;
+    /**
+     * 
+     */
+    bookInput: BookInput;
+}
+
 /**
  * 
  */
 export class BooksApi extends runtime.BaseAPI {
+
+    /**
+     * Creates request options for createBook without sending the request
+     */
+    async createBookRequestOpts(requestParameters: CreateBookRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['bookInput'] == null) {
+            throw new runtime.RequiredError(
+                'bookInput',
+                'Required parameter "bookInput" was null or undefined when calling createBook().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/books`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: BookInputToJSON(requestParameters['bookInput']),
+        };
+    }
+
+    /**
+     */
+    async createBookRaw(requestParameters: CreateBookRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BookIdResponse>> {
+        const requestOptions = await this.createBookRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => BookIdResponseFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async createBook(requestParameters: CreateBookRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BookIdResponse> {
+        const response = await this.createBookRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for deleteBook without sending the request
+     */
+    async deleteBookRequestOpts(requestParameters: DeleteBookRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling deleteBook().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/books/{id}`;
+        urlPath = urlPath.replace('{id}', encodeURIComponent(String(requestParameters['id'])));
+
+        return {
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     */
+    async deleteBookRaw(requestParameters: DeleteBookRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const requestOptions = await this.deleteBookRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     */
+    async deleteBook(requestParameters: DeleteBookRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.deleteBookRaw(requestParameters, initOverrides);
+    }
 
     /**
      * Creates request options for getBookById without sending the request
@@ -141,6 +263,59 @@ export class BooksApi extends runtime.BaseAPI {
      */
     async listBooks(requestParameters: ListBooksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<BookResponse>> {
         const response = await this.listBooksRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for updateBook without sending the request
+     */
+    async updateBookRequestOpts(requestParameters: UpdateBookRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling updateBook().'
+            );
+        }
+
+        if (requestParameters['bookInput'] == null) {
+            throw new runtime.RequiredError(
+                'bookInput',
+                'Required parameter "bookInput" was null or undefined when calling updateBook().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/books/{id}`;
+        urlPath = urlPath.replace('{id}', encodeURIComponent(String(requestParameters['id'])));
+
+        return {
+            path: urlPath,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: BookInputToJSON(requestParameters['bookInput']),
+        };
+    }
+
+    /**
+     */
+    async updateBookRaw(requestParameters: UpdateBookRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BookIdResponse>> {
+        const requestOptions = await this.updateBookRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => BookIdResponseFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async updateBook(requestParameters: UpdateBookRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BookIdResponse> {
+        const response = await this.updateBookRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

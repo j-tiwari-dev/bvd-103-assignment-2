@@ -167,14 +167,55 @@
 				],
 				"type": "object",
 				"additionalProperties": false
+			},
+			"BookIdResponse": {
+				"properties": {
+					"id": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"id"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"BookInput": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"author": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"price": {
+						"type": "number",
+						"format": "double"
+					},
+					"image": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"name",
+					"author",
+					"description",
+					"price",
+					"image"
+				],
+				"type": "object",
+				"additionalProperties": false
 			}
 		},
 		"securitySchemes": {}
 	},
 	"info": {
-		"title": "assignment-4",
+		"title": "assignment-5",
 		"version": "1.0.0",
-		"description": "This is a template repository for the fourth assignment in BVD 103 at McMaster Continuing Education.",
+		"description": "BVD 103 Assignment 5 backend API with OpenAPI documentation, generated TypeScript SDK, warehouse inventory, orders, and automated testing.",
 		"license": {
 			"name": "ISC"
 		},
@@ -414,6 +455,36 @@
 						}
 					}
 				]
+			},
+			"post": {
+				"operationId": "CreateBook",
+				"responses": {
+					"201": {
+						"description": "Book created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BookIdResponse"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Books"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/BookInput"
+							}
+						}
+					}
+				}
 			}
 		},
 		"/books/{id}": {
@@ -429,6 +500,67 @@
 								}
 							}
 						}
+					}
+				},
+				"tags": [
+					"Books"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"put": {
+				"operationId": "UpdateBook",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BookIdResponse"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Books"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/BookInput"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteBook",
+				"responses": {
+					"204": {
+						"description": "Book deleted"
 					}
 				},
 				"tags": [

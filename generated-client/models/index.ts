@@ -1,5 +1,7 @@
 /* tslint:disable */
 
+export * from './BookIdResponse';
+export * from './BookInput';
 export * from './BookResponse';
 export * from './FulfilOrderRequest';
 export * from './FulfilledBook';
