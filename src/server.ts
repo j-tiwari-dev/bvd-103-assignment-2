@@ -5,8 +5,6 @@ import qs from 'koa-qs';
 import Router from '@koa/router';
 import { koaSwagger } from 'koa2-swagger-ui';
 
-import bookRoutes from './books/book_routes';
-import warehouseRoutes from './warehouse/warehouse_routes';
 import { connectToDatabase } from './db';
 
 import swaggerDocument from '../build/swagger.json';
@@ -20,19 +18,11 @@ qs(app);
 app.use(cors());
 app.use(bodyParser());
 
-// Existing Assignment 4 book routes
-app.use(bookRoutes.allowedMethods());
-app.use(bookRoutes.routes());
-
-// Existing Assignment 4 warehouse and order routes
-app.use(warehouseRoutes.allowedMethods());
-app.use(warehouseRoutes.routes());
-
-// Generated tsoa routes
+// Assignment 6: Use generated tsoa routes only
 RegisterRoutes(tsoaRouter);
 
-app.use(tsoaRouter.allowedMethods());
 app.use(tsoaRouter.routes());
+app.use(tsoaRouter.allowedMethods());
 
 // Swagger UI
 app.use(
