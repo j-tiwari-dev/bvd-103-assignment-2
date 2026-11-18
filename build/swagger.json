@@ -7,6 +7,18 @@
 		"requestBodies": {},
 		"responses": {},
 		"schemas": {
+			"ErrorResponse": {
+				"properties": {
+					"error": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"error"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"PlaceBooksRequest": {
 				"properties": {
 					"bookId": {
@@ -228,8 +240,20 @@
 				"responses": {
 					"204": {
 						"description": "Books placed on shelf"
+					},
+					"400": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
 					}
 				},
+				"description": "Adds copies of a book to a warehouse shelf.\n\nOnly positive whole-number quantities are accepted.\nExisting shelf inventory is increased by the supplied quantity.",
+				"summary": "Place books on a warehouse shelf",
 				"tags": [
 					"Warehouse"
 				],
@@ -256,15 +280,32 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/ShelfResponse"
-									},
-									"type": "array"
+									"anyOf": [
+										{
+											"items": {
+												"$ref": "#/components/schemas/ShelfResponse"
+											},
+											"type": "array"
+										},
+										{}
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
 								}
 							}
 						}
 					}
 				},
+				"description": "Retrieves all warehouse shelves containing copies of a book.\n\nReturns each shelf identifier and its available quantity.",
+				"summary": "Find book inventory by shelf",
 				"tags": [
 					"Warehouse"
 				],

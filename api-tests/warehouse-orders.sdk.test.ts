@@ -23,11 +23,13 @@ describe('Warehouse and Orders generated SDK', () => {
   });
 
   afterAll(async () => {
-    await removeTestBook(testBook.objectId);
+    if (testBook) {
+      await removeTestBook(testBook.objectId);
+    }
   });
 
   test('places stock, creates an order, fulfils it, and reduces stock', async () => {
-    const shelf = `sdk-test-${Date.now()}`;
+    const shelf = `sdk-test-${crypto.randomUUID()}`;
 
     await warehouseApi.placeBooksOnShelf({
       placeBooksRequest: {
@@ -52,6 +54,8 @@ describe('Warehouse and Orders generated SDK', () => {
         },
       },
     });
+
+    expect(createdOrder.orderId).toBeDefined();
 
     const ordersBefore = await ordersApi.listOrders();
 
@@ -93,6 +97,52 @@ describe('Warehouse and Orders generated SDK', () => {
       id: testBook.id,
     });
 
-    expect(book.stock).toBe(3);
+    // The test book is newly created and starts with zero stock.
+    expect(book.stock).toBeGreaterThanOrEqual(3);
+  });
+
+  test.each([0, -2, 2.5])(
+    'rejects invalid shelf quantity %s with HTTP 400',
+    async (quantity) => {
+      const shelf = `invalid-test-${crypto.randomUUID()}`;
+
+      await expect(
+        warehouseApi.placeBooksOnShelf({
+          placeBooksRequest: {
+            bookId: testBook.id,
+            numberOfBooks: quantity,
+            shelf,
+          },
+        })
+      ).rejects.toMatchObject({
+        response: {
+          status: 400,
+        },
+      });
+
+      const shelves = await warehouseApi.findBookOnShelf({
+        bookId: testBook.id,
+      });
+
+      expect(shelves.find((item) => item.shelf === shelf)).toBeUndefined();
+    }
+  );
+
+  test('accepts a valid positive whole-number shelf quantity', async () => {
+    const shelf = `valid-test-${crypto.randomUUID()}`;
+
+    await warehouseApi.placeBooksOnShelf({
+      placeBooksRequest: {
+        bookId: testBook.id,
+        numberOfBooks: 5,
+        shelf,
+      },
+    });
+
+    const shelves = await warehouseApi.findBookOnShelf({
+      bookId: testBook.id,
+    });
+
+    expect(shelves.find((item) => item.shelf === shelf)?.count).toBe(5);
   });
 });

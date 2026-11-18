@@ -18,6 +18,14 @@ import type * as KoaRouter from '@koa/router';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
 const models: TsoaRoute.Models = {
+    "ErrorResponse": {
+        "dataType": "refObject",
+        "properties": {
+            "error": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "PlaceBooksRequest": {
         "dataType": "refObject",
         "properties": {
@@ -135,6 +143,7 @@ export function RegisterRoutes(router: KoaRouter) {
 
         const argsWarehouseController_placeBooksOnShelf: Record<string, TsoaRoute.ParameterSchema> = {
                 body: {"in":"body","name":"body","required":true,"ref":"PlaceBooksRequest"},
+                badRequest: {"in":"res","name":"400","required":true,"ref":"ErrorResponse"},
         };
         router.post('/warehouse/shelves',
             ...(fetchMiddlewares<Middleware>(WarehouseController)),
@@ -165,6 +174,7 @@ export function RegisterRoutes(router: KoaRouter) {
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsWarehouseController_findBookOnShelf: Record<string, TsoaRoute.ParameterSchema> = {
                 bookId: {"in":"path","name":"bookId","required":true,"dataType":"string"},
+                badRequest: {"in":"res","name":"400","required":true,"ref":"ErrorResponse"},
         };
         router.get('/warehouse/books/:bookId',
             ...(fetchMiddlewares<Middleware>(WarehouseController)),
