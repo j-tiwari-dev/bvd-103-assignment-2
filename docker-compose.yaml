@@ -31,7 +31,7 @@ services:
     image: ghcr.io/mcmastercce/bvd-103-mcmasterful-books/mcmasterful-books-docker:main
     restart: unless-stopped
     expose:
-      - "80"
+      - "9080"
     networks:
       - books-network
 
@@ -55,4 +55,3 @@ volumes:
 networks:
   books-network:
     driver: bridge
-    
