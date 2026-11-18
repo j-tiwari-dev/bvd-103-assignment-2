@@ -3,7 +3,7 @@ import { BooksApi, Configuration } from '../generated-client';
 import { createTestBook, removeTestBook, type TestBook } from './test_data';
 
 const configuration = new Configuration({
-  basePath: 'http://localhost:3000',
+  basePath: process.env.API_BASE_URL ?? 'http://localhost:8080/api',
 });
 
 const booksApi = new BooksApi(configuration);
@@ -16,7 +16,9 @@ describe('Books API generated SDK', () => {
   });
 
   afterAll(async () => {
-    await removeTestBook(testBook.objectId);
+    if (testBook) {
+      await removeTestBook(testBook.id);
+    }
   });
 
   test('lists books using the generated SDK', async () => {
@@ -37,5 +39,24 @@ describe('Books API generated SDK', () => {
     expect(book.id).toBe(testBook.id);
     expect(book.name).toBe('Generated SDK Test Book');
     expect(book.stock).toBe(0);
+  });
+
+  test('handles special regex characters without a server error', async () => {
+    const books = await booksApi.listBooks({
+      name: '(',
+    });
+
+    expect(Array.isArray(books)).toBe(true);
+  });
+
+  test('treats regex characters as literal search text', async () => {
+    const books = await booksApi.listBooks({
+      name: '.*',
+    });
+
+    expect(Array.isArray(books)).toBe(true);
+
+    // The seeded test book does not contain ".*" in its name.
+    expect(books.some((book) => book.id === testBook.id)).toBe(false);
   });
 });

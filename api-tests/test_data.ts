@@ -1,50 +1,33 @@
-import { MongoClient, ObjectId } from 'mongodb';
+import { BooksApi, Configuration } from '../generated-client';
 
-const mongoUrl = process.env.MONGODB_URL ?? 'mongodb://localhost:27017';
+const configuration = new Configuration({
+  basePath: process.env.API_BASE_URL ?? 'http://localhost:8080/api',
+});
 
-const databaseName = 'mcmasterful-books';
+const booksApi = new BooksApi(configuration);
 
 export interface TestBook {
   id: string;
-  objectId: ObjectId;
 }
 
 export async function createTestBook(): Promise<TestBook> {
-  const client = new MongoClient(mongoUrl);
-
-  await client.connect();
-
-  try {
-    const objectId = new ObjectId();
-
-    await client.db(databaseName).collection('books').insertOne({
-      _id: objectId,
+  const result = await booksApi.createBook({
+    bookInput: {
       name: 'Generated SDK Test Book',
       author: 'API Test Author',
       description: 'A book created for generated SDK API testing.',
       price: 19.99,
       image: 'https://example.com/sdk-test-book.jpg',
-    });
+    },
+  });
 
-    return {
-      id: objectId.toString(),
-      objectId,
-    };
-  } finally {
-    await client.close();
-  }
+  return {
+    id: result.id,
+  };
 }
 
-export async function removeTestBook(objectId: ObjectId): Promise<void> {
-  const client = new MongoClient(mongoUrl);
-
-  await client.connect();
-
-  try {
-    await client.db(databaseName).collection('books').deleteOne({
-      _id: objectId,
-    });
-  } finally {
-    await client.close();
-  }
+export async function removeTestBook(id: string): Promise<void> {
+  await booksApi.deleteBook({
+    id,
+  });
 }

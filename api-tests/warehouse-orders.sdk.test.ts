@@ -8,7 +8,7 @@ import {
 import { createTestBook, removeTestBook, type TestBook } from './test_data';
 
 const configuration = new Configuration({
-  basePath: 'http://localhost:3000',
+  basePath: process.env.API_BASE_URL ?? 'http://localhost:8080/api',
 });
 
 const booksApi = new BooksApi(configuration);
@@ -24,7 +24,7 @@ describe('Warehouse and Orders generated SDK', () => {
 
   afterAll(async () => {
     if (testBook) {
-      await removeTestBook(testBook.objectId);
+      await removeTestBook(testBook.id);
     }
   });
 
