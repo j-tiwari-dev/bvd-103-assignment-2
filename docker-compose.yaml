@@ -27,6 +27,14 @@ services:
     networks:
       - books-network
 
+  frontend:
+    image: ghcr.io/mcmastercce/bvd-103-mcmasterful-books/mcmasterful-books-docker:main
+    restart: unless-stopped
+    expose:
+      - "80"
+    networks:
+      - books-network
+
   nginx:
     image: nginx:alpine
     restart: unless-stopped
@@ -36,6 +44,7 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - backend
+      - frontend
     networks:
       - books-network
 
@@ -46,3 +55,4 @@ volumes:
 networks:
   books-network:
     driver: bridge
+    
