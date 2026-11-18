@@ -14,6 +14,11 @@
 
 import * as runtime from '../runtime';
 import {
+    type BookErrorResponse,
+    BookErrorResponseFromJSON,
+    BookErrorResponseToJSON,
+} from '../models/BookErrorResponse';
+import {
     type BookIdResponse,
     BookIdResponseFromJSON,
     BookIdResponseToJSON,
@@ -115,6 +120,8 @@ export class BooksApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates a new book.
+     * Create a book
      */
     async createBookRaw(requestParameters: CreateBookRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BookIdResponse>> {
         const requestOptions = await this.createBookRequestOpts(requestParameters);
@@ -124,6 +131,8 @@ export class BooksApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates a new book.
+     * Create a book
      */
     async createBook(requestParameters: CreateBookRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BookIdResponse> {
         const response = await this.createBookRaw(requestParameters, initOverrides);
@@ -158,6 +167,8 @@ export class BooksApi extends runtime.BaseAPI {
     }
 
     /**
+     * Deletes an existing book.
+     * Delete a book
      */
     async deleteBookRaw(requestParameters: DeleteBookRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const requestOptions = await this.deleteBookRequestOpts(requestParameters);
@@ -167,6 +178,8 @@ export class BooksApi extends runtime.BaseAPI {
     }
 
     /**
+     * Deletes an existing book.
+     * Delete a book
      */
     async deleteBook(requestParameters: DeleteBookRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.deleteBookRaw(requestParameters, initOverrides);
@@ -200,6 +213,8 @@ export class BooksApi extends runtime.BaseAPI {
     }
 
     /**
+     * Returns one book and its current total warehouse stock.
+     * Get a book by ID
      */
     async getBookByIdRaw(requestParameters: GetBookByIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BookResponse>> {
         const requestOptions = await this.getBookByIdRequestOpts(requestParameters);
@@ -209,6 +224,8 @@ export class BooksApi extends runtime.BaseAPI {
     }
 
     /**
+     * Returns one book and its current total warehouse stock.
+     * Get a book by ID
      */
     async getBookById(requestParameters: GetBookByIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BookResponse> {
         const response = await this.getBookByIdRaw(requestParameters, initOverrides);
@@ -251,6 +268,8 @@ export class BooksApi extends runtime.BaseAPI {
     }
 
     /**
+     * Returns books matching the supplied filters. Name and author searches are case-insensitive and treat regex characters literally.
+     * List and filter books
      */
     async listBooksRaw(requestParameters: ListBooksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<BookResponse>>> {
         const requestOptions = await this.listBooksRequestOpts(requestParameters);
@@ -260,6 +279,8 @@ export class BooksApi extends runtime.BaseAPI {
     }
 
     /**
+     * Returns books matching the supplied filters. Name and author searches are case-insensitive and treat regex characters literally.
+     * List and filter books
      */
     async listBooks(requestParameters: ListBooksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<BookResponse>> {
         const response = await this.listBooksRaw(requestParameters, initOverrides);
@@ -304,6 +325,8 @@ export class BooksApi extends runtime.BaseAPI {
     }
 
     /**
+     * Updates an existing book.
+     * Update a book
      */
     async updateBookRaw(requestParameters: UpdateBookRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BookIdResponse>> {
         const requestOptions = await this.updateBookRequestOpts(requestParameters);
@@ -313,6 +336,8 @@ export class BooksApi extends runtime.BaseAPI {
     }
 
     /**
+     * Updates an existing book.
+     * Update a book
      */
     async updateBook(requestParameters: UpdateBookRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BookIdResponse> {
         const response = await this.updateBookRaw(requestParameters, initOverrides);

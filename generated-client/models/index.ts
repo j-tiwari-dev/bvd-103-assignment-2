@@ -1,8 +1,10 @@
 /* tslint:disable */
 
+export * from './BookErrorResponse';
 export * from './BookIdResponse';
 export * from './BookInput';
 export * from './BookResponse';
+export * from './ErrorResponse';
 export * from './FulfilOrderRequest';
 export * from './FulfilledBook';
 export * from './GetHealth200Response';

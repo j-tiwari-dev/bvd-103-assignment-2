@@ -6,12 +6,12 @@
 
 Name | Type
 ------------ | -------------
-`id` | string
 `name` | string
 `author` | string
 `description` | string
 `price` | number
 `image` | string
+`id` | string
 `stock` | number
 
 ## Example
@@ -21,12 +21,12 @@ import type { BookResponse } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "id": null,
   "name": null,
   "author": null,
   "description": null,
   "price": null,
   "image": null,
+  "id": null,
   "stock": null,
 } satisfies BookResponse
 

@@ -4,11 +4,11 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**createBook**](BooksApi.md#createbook) | **POST** /books |  |
-| [**deleteBook**](BooksApi.md#deletebook) | **DELETE** /books/{id} |  |
-| [**getBookById**](BooksApi.md#getbookbyid) | **GET** /books/{id} |  |
-| [**listBooks**](BooksApi.md#listbooks) | **GET** /books |  |
-| [**updateBook**](BooksApi.md#updatebook) | **PUT** /books/{id} |  |
+| [**createBook**](BooksApi.md#createbook) | **POST** /books | Create a book |
+| [**deleteBook**](BooksApi.md#deletebook) | **DELETE** /books/{id} | Delete a book |
+| [**getBookById**](BooksApi.md#getbookbyid) | **GET** /books/{id} | Get a book by ID |
+| [**listBooks**](BooksApi.md#listbooks) | **GET** /books | List and filter books |
+| [**updateBook**](BooksApi.md#updatebook) | **PUT** /books/{id} | Update a book |
 
 
 
@@ -16,7 +16,9 @@ All URIs are relative to *http://localhost*
 
 > BookIdResponse createBook(bookInput)
 
+Create a book
 
+Creates a new book.
 
 ### Example
 
@@ -73,6 +75,7 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **201** | Book created |  -  |
+| **400** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -81,7 +84,9 @@ No authorization required
 
 > deleteBook(id)
 
+Delete a book
 
+Deletes an existing book.
 
 ### Example
 
@@ -131,13 +136,15 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: Not defined
+- **Accept**: `application/json`
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **204** | Book deleted |  -  |
+| **400** |  |  -  |
+| **404** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -146,7 +153,9 @@ No authorization required
 
 > BookResponse getBookById(id)
 
+Get a book by ID
 
+Returns one book and its current total warehouse stock.
 
 ### Example
 
@@ -203,6 +212,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | Ok |  -  |
+| **400** |  |  -  |
+| **404** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -211,7 +222,9 @@ No authorization required
 
 > Array&lt;BookResponse&gt; listBooks(name, author, priceFrom, priceTo)
 
+List and filter books
 
+Returns books matching the supplied filters. Name and author searches are case-insensitive and treat regex characters literally.
 
 ### Example
 
@@ -285,7 +298,9 @@ No authorization required
 
 > BookIdResponse updateBook(id, bookInput)
 
+Update a book
 
+Updates an existing book.
 
 ### Example
 
@@ -345,6 +360,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | Ok |  -  |
+| **400** |  |  -  |
+| **404** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

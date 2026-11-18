@@ -144,9 +144,6 @@
 			},
 			"BookResponse": {
 				"properties": {
-					"id": {
-						"type": "string"
-					},
 					"name": {
 						"type": "string"
 					},
@@ -163,19 +160,34 @@
 					"image": {
 						"type": "string"
 					},
+					"id": {
+						"type": "string"
+					},
 					"stock": {
 						"type": "number",
 						"format": "double"
 					}
 				},
 				"required": [
-					"id",
 					"name",
 					"author",
 					"description",
 					"price",
 					"image",
+					"id",
 					"stock"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"BookErrorResponse": {
+				"properties": {
+					"error": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"error"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -456,6 +468,8 @@
 						}
 					}
 				},
+				"description": "Returns books matching the supplied filters. Name and author searches\nare case-insensitive and treat regex characters literally.",
+				"summary": "List and filter books",
 				"tags": [
 					"Books"
 				],
@@ -505,12 +519,29 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/BookIdResponse"
+									"anyOf": [
+										{
+											"$ref": "#/components/schemas/BookIdResponse"
+										},
+										{}
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BookErrorResponse"
 								}
 							}
 						}
 					}
 				},
+				"description": "Creates a new book.",
+				"summary": "Create a book",
 				"tags": [
 					"Books"
 				],
@@ -537,12 +568,39 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/BookResponse"
+									"anyOf": [
+										{
+											"$ref": "#/components/schemas/BookResponse"
+										},
+										{}
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BookErrorResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BookErrorResponse"
 								}
 							}
 						}
 					}
 				},
+				"description": "Returns one book and its current total warehouse stock.",
+				"summary": "Get a book by ID",
 				"tags": [
 					"Books"
 				],
@@ -566,12 +624,39 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/BookIdResponse"
+									"anyOf": [
+										{
+											"$ref": "#/components/schemas/BookIdResponse"
+										},
+										{}
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BookErrorResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BookErrorResponse"
 								}
 							}
 						}
 					}
 				},
+				"description": "Updates an existing book.",
+				"summary": "Update a book",
 				"tags": [
 					"Books"
 				],
@@ -602,8 +687,30 @@
 				"responses": {
 					"204": {
 						"description": "Book deleted"
+					},
+					"400": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BookErrorResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BookErrorResponse"
+								}
+							}
+						}
 					}
 				},
+				"description": "Deletes an existing book.",
+				"summary": "Delete a book",
 				"tags": [
 					"Books"
 				],

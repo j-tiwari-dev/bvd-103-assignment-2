@@ -22,10 +22,6 @@ export interface BookResponse {
     /**
      * 
      */
-    id: string;
-    /**
-     * 
-     */
     name: string;
     /**
      * 
@@ -46,6 +42,10 @@ export interface BookResponse {
     /**
      * 
      */
+    id: string;
+    /**
+     * 
+     */
     stock: number;
 }
 
@@ -53,12 +53,12 @@ export interface BookResponse {
  * Check if a given object implements the BookResponse interface.
  */
 export function instanceOfBookResponse(value: object): value is BookResponse {
-    if (!('id' in value) || value['id'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('author' in value) || value['author'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
     if (!('price' in value) || value['price'] === undefined) return false;
     if (!('image' in value) || value['image'] === undefined) return false;
+    if (!('id' in value) || value['id'] === undefined) return false;
     if (!('stock' in value) || value['stock'] === undefined) return false;
     return true;
 }
@@ -73,12 +73,12 @@ export function BookResponseFromJSONTyped(json: any, ignoreDiscriminator: boolea
     }
     return {
         
-        'id': json['id'],
         'name': json['name'],
         'author': json['author'],
         'description': json['description'],
         'price': json['price'],
         'image': json['image'],
+        'id': json['id'],
         'stock': json['stock'],
     };
 }
@@ -94,12 +94,12 @@ export function BookResponseToJSONTyped(value?: BookResponse | null, ignoreDiscr
 
     return {
         
-        'id': value['id'],
         'name': value['name'],
         'author': value['author'],
         'description': value['description'],
         'price': value['price'],
         'image': value['image'],
+        'id': value['id'],
         'stock': value['stock'],
     };
 }

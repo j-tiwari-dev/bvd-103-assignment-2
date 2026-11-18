@@ -14,6 +14,11 @@
 
 import * as runtime from '../runtime';
 import {
+    type ErrorResponse,
+    ErrorResponseFromJSON,
+    ErrorResponseToJSON,
+} from '../models/ErrorResponse';
+import {
     type PlaceBooksRequest,
     PlaceBooksRequestFromJSON,
     PlaceBooksRequestToJSON,
@@ -71,6 +76,8 @@ export class WarehouseApi extends runtime.BaseAPI {
     }
 
     /**
+     * Retrieves all warehouse shelves containing copies of a book.  Returns each shelf identifier and its available quantity.
+     * Find book inventory by shelf
      */
     async findBookOnShelfRaw(requestParameters: FindBookOnShelfRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ShelfResponse>>> {
         const requestOptions = await this.findBookOnShelfRequestOpts(requestParameters);
@@ -80,6 +87,8 @@ export class WarehouseApi extends runtime.BaseAPI {
     }
 
     /**
+     * Retrieves all warehouse shelves containing copies of a book.  Returns each shelf identifier and its available quantity.
+     * Find book inventory by shelf
      */
     async findBookOnShelf(requestParameters: FindBookOnShelfRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ShelfResponse>> {
         const response = await this.findBookOnShelfRaw(requestParameters, initOverrides);
@@ -116,6 +125,8 @@ export class WarehouseApi extends runtime.BaseAPI {
     }
 
     /**
+     * Adds copies of a book to a warehouse shelf.  Only positive whole-number quantities are accepted. Existing shelf inventory is increased by the supplied quantity.
+     * Place books on a warehouse shelf
      */
     async placeBooksOnShelfRaw(requestParameters: PlaceBooksOnShelfRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const requestOptions = await this.placeBooksOnShelfRequestOpts(requestParameters);
@@ -125,6 +136,8 @@ export class WarehouseApi extends runtime.BaseAPI {
     }
 
     /**
+     * Adds copies of a book to a warehouse shelf.  Only positive whole-number quantities are accepted. Existing shelf inventory is increased by the supplied quantity.
+     * Place books on a warehouse shelf
      */
     async placeBooksOnShelf(requestParameters: PlaceBooksOnShelfRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.placeBooksOnShelfRaw(requestParameters, initOverrides);

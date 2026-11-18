@@ -3,11 +3,13 @@ apis/DefaultApi.ts
 apis/OrdersApi.ts
 apis/WarehouseApi.ts
 apis/index.ts
+docs/BookErrorResponse.md
 docs/BookIdResponse.md
 docs/BookInput.md
 docs/BookResponse.md
 docs/BooksApi.md
 docs/DefaultApi.md
+docs/ErrorResponse.md
 docs/FulfilOrderRequest.md
 docs/FulfilledBook.md
 docs/GetHealth200Response.md
@@ -19,9 +21,11 @@ docs/PlaceOrderResponse.md
 docs/ShelfResponse.md
 docs/WarehouseApi.md
 index.ts
+models/BookErrorResponse.ts
 models/BookIdResponse.ts
 models/BookInput.ts
 models/BookResponse.ts
+models/ErrorResponse.ts
 models/FulfilOrderRequest.ts
 models/FulfilledBook.ts
 models/GetHealth200Response.ts

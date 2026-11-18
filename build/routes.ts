@@ -96,13 +96,21 @@ const models: TsoaRoute.Models = {
     "BookResponse": {
         "dataType": "refObject",
         "properties": {
-            "id": {"dataType":"string","required":true},
             "name": {"dataType":"string","required":true},
             "author": {"dataType":"string","required":true},
             "description": {"dataType":"string","required":true},
             "price": {"dataType":"double","required":true},
             "image": {"dataType":"string","required":true},
+            "id": {"dataType":"string","required":true},
             "stock": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "BookErrorResponse": {
+        "dataType": "refObject",
+        "properties": {
+            "error": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
     },
@@ -357,6 +365,8 @@ export function RegisterRoutes(router: KoaRouter) {
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsBooksController_getBookById: Record<string, TsoaRoute.ParameterSchema> = {
                 id: {"in":"path","name":"id","required":true,"dataType":"string"},
+                badRequest: {"in":"res","name":"400","required":true,"ref":"BookErrorResponse"},
+                notFound: {"in":"res","name":"404","required":true,"ref":"BookErrorResponse"},
         };
         router.get('/books/:id',
             ...(fetchMiddlewares<Middleware>(BooksController)),
@@ -387,6 +397,7 @@ export function RegisterRoutes(router: KoaRouter) {
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsBooksController_createBook: Record<string, TsoaRoute.ParameterSchema> = {
                 body: {"in":"body","name":"body","required":true,"ref":"BookInput"},
+                badRequest: {"in":"res","name":"400","required":true,"ref":"BookErrorResponse"},
         };
         router.post('/books',
             ...(fetchMiddlewares<Middleware>(BooksController)),
@@ -418,6 +429,8 @@ export function RegisterRoutes(router: KoaRouter) {
         const argsBooksController_updateBook: Record<string, TsoaRoute.ParameterSchema> = {
                 id: {"in":"path","name":"id","required":true,"dataType":"string"},
                 body: {"in":"body","name":"body","required":true,"ref":"BookInput"},
+                badRequest: {"in":"res","name":"400","required":true,"ref":"BookErrorResponse"},
+                notFound: {"in":"res","name":"404","required":true,"ref":"BookErrorResponse"},
         };
         router.put('/books/:id',
             ...(fetchMiddlewares<Middleware>(BooksController)),
@@ -448,6 +461,8 @@ export function RegisterRoutes(router: KoaRouter) {
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsBooksController_deleteBook: Record<string, TsoaRoute.ParameterSchema> = {
                 id: {"in":"path","name":"id","required":true,"dataType":"string"},
+                badRequest: {"in":"res","name":"400","required":true,"ref":"BookErrorResponse"},
+                notFound: {"in":"res","name":"404","required":true,"ref":"BookErrorResponse"},
         };
         router.delete('/books/:id',
             ...(fetchMiddlewares<Middleware>(BooksController)),
