@@ -4,15 +4,20 @@ x-backend-common: &backend-common
   volumes:
     - .:/app:ro
     - backend_node_modules:/app/node_modules:ro
+    - generated_build:/app/build:ro
+    - generated_client:/app/generated-client:ro
   environment:
     MONGODB_URL: mongodb://mongo:27017
   command: npm run start-server
   depends_on:
-    - mongo
+    mongo:
+      condition: service_started
+    prepare:
+      condition: service_completed_successfully
   networks:
     - books-network
   restart: unless-stopped
-
+ 
 services:
   mongo:
     image: mongo:7
@@ -21,27 +26,53 @@ services:
       - mongo_data:/data/db
     networks:
       - books-network
-
+ 
+  prepare:
+    image: node:24-bookworm
+    working_dir: /app
+    volumes:
+      - .:/app:ro
+      - backend_node_modules:/app/node_modules
+      - generated_build:/app/build
+      - generated_client:/app/generated-client
+    command: >
+      sh -c "
+        apt-get update &&
+        apt-get install -y --no-install-recommends openjdk-17-jre-headless &&
+        rm -rf /var/lib/apt/lists/* &&
+        npm ci &&
+        npm run swagger &&
+        npm run routes &&
+        npm run generate-sdk &&
+        npm run check-types
+      "
+    networks:
+      - books-network
+    restart: "no"
+ 
   backend1:
     <<: *backend-common
-
+ 
   backend2:
     <<: *backend-common
-
+ 
   backend3:
     <<: *backend-common
-
+ 
   frontend:
     image: ghcr.io/mcmastercce/bvd-103-mcmasterful-books/mcmasterful-books-docker:main
     restart: unless-stopped
     volumes:
       - ./adapter:/source/adapter:ro
-      - ./generated-client:/source/generated-client:ro
+      - generated_client:/source/generated-client:ro
     expose:
       - "9080"
+    depends_on:
+      prepare:
+        condition: service_completed_successfully
     networks:
       - books-network
-
+ 
   nginx:
     image: nginx:alpine
     restart: unless-stopped
@@ -56,11 +87,13 @@ services:
       - frontend
     networks:
       - books-network
-
+ 
 volumes:
   mongo_data:
   backend_node_modules:
-
+  generated_build:
+  generated_client:
+ 
 networks:
   books-network:
     driver: bridge

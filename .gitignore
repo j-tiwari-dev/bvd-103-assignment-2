@@ -128,3 +128,6 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+# Generated OpenAPI and TypeScript SDK files
+/build/
+/generated-client/
