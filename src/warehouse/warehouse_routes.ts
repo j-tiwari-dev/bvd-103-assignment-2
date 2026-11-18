@@ -1,19 +1,11 @@
 import Router from '@koa/router';
 import { ObjectId } from 'mongodb';
 import { getDatabase } from '../db';
-import { DatabaseWarehouse } from './warehouse_database';
+import { getWarehouse } from './get_warehouse';
 import { fulfilOrder } from './fulfil_order';
 import { placeOrder } from './place_order';
 
 const warehouseRouter = new Router();
-
-function getWarehouse(): DatabaseWarehouse {
-  const db = getDatabase();
-
-  const warehouseDatabase = db.client.db('mcmasterful-warehouse');
-
-  return new DatabaseWarehouse(warehouseDatabase);
-}
 
 warehouseRouter.post('/warehouse/shelves', async (ctx) => {
   const body = ctx.request.body as {

@@ -1,15 +1,12 @@
 import Router from '@koa/router';
 import { type Document } from 'mongodb';
 import { getDatabase } from '../db';
-import { DatabaseWarehouse } from '../warehouse/warehouse_database';
+import { getWarehouse } from '../warehouse/get_warehouse';
 
 const listRouter = new Router();
 
-function getWarehouse(): DatabaseWarehouse {
-  const bookDatabase = getDatabase();
-  const warehouseDatabase = bookDatabase.client.db('mcmasterful-warehouse');
-
-  return new DatabaseWarehouse(warehouseDatabase);
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function calculateTotalStock(copies: Record<string, number>): number {
@@ -28,14 +25,14 @@ listRouter.get('/books', async (ctx) => {
 
     if (typeof name === 'string') {
       query.name = {
-        $regex: name,
+        $regex: escapeRegex(name),
         $options: 'i',
       };
     }
 
     if (typeof author === 'string') {
       query.author = {
-        $regex: author,
+        $regex: escapeRegex(author),
         $options: 'i',
       };
     }

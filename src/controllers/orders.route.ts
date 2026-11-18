@@ -8,9 +8,10 @@ import {
   SuccessResponse,
   Tags,
 } from 'tsoa';
+
 import { ObjectId } from 'mongodb';
 import { getDatabase } from '../db';
-import { DatabaseWarehouse } from '../warehouse/warehouse_database';
+import { getWarehouse } from '../warehouse/get_warehouse';
 import { placeOrder } from '../warehouse/place_order';
 import { fulfilOrder } from '../warehouse/fulfil_order';
 
@@ -37,16 +38,14 @@ interface FulfilOrderRequest {
   booksFulfilled: FulfilledBook[];
 }
 
-function getWarehouse(): DatabaseWarehouse {
-  const db = getDatabase();
-  const warehouseDatabase = db.client.db('mcmasterful-warehouse');
-
-  return new DatabaseWarehouse(warehouseDatabase);
-}
-
 @Route('orders')
 @Tags('Orders')
 export class OrdersController extends Controller {
+  /**
+   * Creates a new order for the requested books.
+   *
+   * @summary Create an order
+   */
   @Post()
   @SuccessResponse('201', 'Order created')
   public async createOrder(
@@ -82,6 +81,11 @@ export class OrdersController extends Controller {
     return result;
   }
 
+  /**
+   * Returns all outstanding orders.
+   *
+   * @summary List orders
+   */
   @Get()
   public async listOrders(): Promise<OrderResponse[]> {
     const warehouse = getWarehouse();
@@ -89,6 +93,11 @@ export class OrdersController extends Controller {
     return await warehouse.listOrders();
   }
 
+  /**
+   * Fulfils an existing order using warehouse inventory.
+   *
+   * @summary Fulfil an order
+   */
   @Post('{orderId}/fulfil')
   @SuccessResponse('204', 'Order fulfilled')
   public async fulfilOrder(

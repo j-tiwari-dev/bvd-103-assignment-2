@@ -12,8 +12,7 @@ import {
   type TsoaResponse,
 } from 'tsoa';
 
-import { getDatabase } from '../db';
-import { DatabaseWarehouse } from '../warehouse/warehouse_database';
+import { getWarehouse } from '../warehouse/get_warehouse';
 
 interface PlaceBooksRequest {
   bookId: string;
@@ -28,13 +27,6 @@ interface ShelfResponse {
 
 interface ErrorResponse {
   error: string;
-}
-
-function getWarehouse(): DatabaseWarehouse {
-  const db = getDatabase();
-  const warehouseDatabase = db.client.db('mcmasterful-warehouse');
-
-  return new DatabaseWarehouse(warehouseDatabase);
 }
 
 @Route('warehouse')
