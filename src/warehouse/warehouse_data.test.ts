@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest';
+
 import { InMemoryWarehouse } from './warehouse_data';
 
 describe('InMemoryWarehouse', () => {
@@ -16,6 +17,7 @@ describe('InMemoryWarehouse', () => {
     const warehouse = new InMemoryWarehouse();
 
     await warehouse.placeBookOnShelf('book-1', 'shelf-a', 5);
+
     await warehouse.placeBookOnShelf('book-1', 'shelf-a', 3);
 
     const copies = await warehouse.getCopiesOnShelf('book-1', 'shelf-a');
@@ -27,12 +29,14 @@ describe('InMemoryWarehouse', () => {
     const warehouse = new InMemoryWarehouse();
 
     await warehouse.placeBookOnShelf('book-1', 'shelf-a', 5);
+
     await warehouse.placeBookOnShelf('book-1', 'shelf-b', 3);
 
     const copies = await warehouse.getCopies('book-1');
 
     expect(copies).toEqual({
       'shelf-a': 5,
+
       'shelf-b': 3,
     });
   });
@@ -40,7 +44,11 @@ describe('InMemoryWarehouse', () => {
   test('returns zero when a book is not on a shelf', async () => {
     const warehouse = new InMemoryWarehouse();
 
-    const copies = await warehouse.getCopiesOnShelf('book-1', 'unknown-shelf');
+    const copies = await warehouse.getCopiesOnShelf(
+      'book-1',
+
+      'unknown-shelf'
+    );
 
     expect(copies).toBe(0);
   });
@@ -52,6 +60,32 @@ describe('InMemoryWarehouse', () => {
 
     expect(copies).toEqual({});
   });
+
+  test.each([0, 2.5, Number.NaN, Infinity, -2.5])(
+    'rejects invalid shelf adjustment %s',
+
+    async (quantity) => {
+      const warehouse = new InMemoryWarehouse();
+
+      await expect(
+        warehouse.placeBookOnShelf('book-1', 'shelf-a', quantity)
+      ).rejects.toThrow('Invalid shelf quantity');
+
+      expect(await warehouse.getCopiesOnShelf('book-1', 'shelf-a')).toBe(0);
+    }
+  );
+
+  test('rejects stock deductions that would make shelf stock negative', async () => {
+    const warehouse = new InMemoryWarehouse();
+
+    await warehouse.placeBookOnShelf('book-1', 'shelf-a', 3);
+
+    await expect(
+      warehouse.placeBookOnShelf('book-1', 'shelf-a', -4)
+    ).rejects.toThrow('Not enough stock');
+
+    expect(await warehouse.getCopiesOnShelf('book-1', 'shelf-a')).toBe(3);
+  });
 });
 
 describe('InMemoryWarehouse orders', () => {
@@ -60,6 +94,7 @@ describe('InMemoryWarehouse orders', () => {
 
     const orderId = await warehouse.placeOrder({
       'book-1': 2,
+
       'book-2': 1,
     });
 
@@ -67,6 +102,7 @@ describe('InMemoryWarehouse orders', () => {
 
     expect(order).toEqual({
       'book-1': 2,
+
       'book-2': 1,
     });
   });
@@ -83,6 +119,7 @@ describe('InMemoryWarehouse orders', () => {
     expect(orders).toEqual([
       {
         orderId,
+
         books: {
           'book-1': 3,
         },
@@ -106,12 +143,15 @@ describe('InMemoryWarehouse orders', () => {
     expect(orders).toEqual([
       {
         orderId: firstOrderId,
+
         books: {
           'book-1': 2,
         },
       },
+
       {
         orderId: secondOrderId,
+
         books: {
           'book-2': 4,
         },
