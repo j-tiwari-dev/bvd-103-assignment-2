@@ -30,6 +30,9 @@ services:
   frontend:
     image: ghcr.io/mcmastercce/bvd-103-mcmasterful-books/mcmasterful-books-docker:main
     restart: unless-stopped
+    volumes:
+      - ./adapter:/source/adapter:ro
+      - ./generated-client:/source/generated-client:ro
     expose:
       - "9080"
     networks:

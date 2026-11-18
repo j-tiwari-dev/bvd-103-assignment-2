@@ -27,7 +27,7 @@ export interface Filter {
 }
 
 const configuration = new Configuration({
-  basePath: 'http://localhost:3000',
+  basePath: '/api',
 });
 
 const booksApi = new BooksApi(configuration);
@@ -35,34 +35,33 @@ const warehouseApi = new WarehouseApi(configuration);
 const ordersApi = new OrdersApi(configuration);
 
 async function listBooks(filters?: Filter[]): Promise<Book[]> {
-  const request: {
-    name?: string;
-    author?: string;
-    priceFrom?: number;
-    priceTo?: number;
-  } = {};
+  // No filters: return all books.
+  if (!filters || filters.length === 0) {
+    return await booksApi.listBooks({});
+  }
 
-  if (filters) {
-    for (const filter of filters) {
-      if (filter.name !== undefined) {
-        request.name = filter.name;
-      }
+  // Run a separate SDK request for each filter.
+  const results = await Promise.all(
+    filters.map((filter) =>
+      booksApi.listBooks({
+        name: filter.name,
+        author: filter.author,
+        priceFrom: filter.from,
+        priceTo: filter.to,
+      })
+    )
+  );
 
-      if (filter.author !== undefined) {
-        request.author = filter.author;
-      }
+  // Combine results using OR logic and remove duplicate books.
+  const uniqueBooks = new Map<BookID, Book>();
 
-      if (filter.from !== undefined) {
-        request.priceFrom = filter.from;
-      }
-
-      if (filter.to !== undefined) {
-        request.priceTo = filter.to;
-      }
+  for (const books of results) {
+    for (const book of books) {
+      uniqueBooks.set(book.id, book);
     }
   }
 
-  return await booksApi.listBooks(request);
+  return Array.from(uniqueBooks.values());
 }
 
 async function createOrUpdateBook(book: Book): Promise<BookID> {
@@ -163,7 +162,7 @@ async function listOrders(): Promise<
   return await ordersApi.listOrders();
 }
 
-const assignment = 'assignment-5';
+const assignment = 'assignment-4';
 
 export default {
   assignment,
