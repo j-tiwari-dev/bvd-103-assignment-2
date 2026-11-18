@@ -1,9 +1,9 @@
 {
-  "name": "Assignent-2",
-  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+  "name": "Assignment-6",
   "dockerComposeFile": ["docker-compose.yml"],
   "service": "dev",
   "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
     "ghcr.io/mcmastercce/bvd-103-mcmasterful-books/mcmasterful-books:latest": {},
     "ghcr.io/mcmastercce/container-tools/copilot-cli:1": {},
     "ghcr.io/mcmastercce/container-tools/fd:1": {},
@@ -16,7 +16,6 @@
     "ghcr.io/mcmastercce/container-tools/pi:1": {},
     "ghcr.io/mcmastercce/container-tools/ripgrep:1": {}
   },
-  // node_modules is not committed, so install dependencies once the container exists.
   "postCreateCommand": "npm install",
   "workspaceFolder": "/workspaces",
   "customizations": {
@@ -31,7 +30,6 @@
       }
     }
   },
-  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
   "remoteUser": "root",
   "containerUser": "root"
 }
