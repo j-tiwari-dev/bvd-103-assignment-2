@@ -12,6 +12,8 @@ import {
   type TsoaResponse,
 } from 'tsoa';
 
+import { ObjectId } from 'mongodb';
+import { getDatabase } from '../db';
 import { getWarehouse } from '../warehouse/get_warehouse';
 
 interface PlaceBooksRequest {
@@ -36,6 +38,7 @@ export class WarehouseController extends Controller {
    * Adds copies of a book to a warehouse shelf.
    *
    * Only positive whole-number quantities are accepted.
+   * The book must exist in the database.
    * Existing shelf inventory is increased by the supplied quantity.
    *
    * @summary Place books on a warehouse shelf
@@ -58,6 +61,24 @@ export class WarehouseController extends Controller {
     ) {
       return badRequest(400, {
         error: 'Invalid shelf placement',
+      });
+    }
+
+    if (!ObjectId.isValid(body.bookId)) {
+      return badRequest(400, {
+        error: 'Invalid book ID',
+      });
+    }
+
+    const db = getDatabase();
+
+    const book = await db.collection('books').findOne({
+      _id: new ObjectId(body.bookId),
+    });
+
+    if (!book) {
+      return badRequest(400, {
+        error: 'Book not found',
       });
     }
 
