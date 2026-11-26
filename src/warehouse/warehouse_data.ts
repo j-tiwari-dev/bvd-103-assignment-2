@@ -41,12 +41,39 @@ export class InMemoryWarehouse implements WarehouseData {
     shelf: ShelfId,
     count: number
   ): Promise<void> {
+    // Only nonzero whole-number adjustments are allowed.
+    if (!Number.isSafeInteger(count) || count === 0) {
+      throw new Error('Invalid shelf quantity');
+    }
+
+    // Validate book and shelf identifiers.
+    if (
+      typeof bookId !== 'string' ||
+      typeof shelf !== 'string' ||
+      !bookId.trim() ||
+      !shelf.trim()
+    ) {
+      throw new Error('Invalid book or shelf');
+    }
+
+    const currentCount = this.books[bookId]?.[shelf] ?? 0;
+    const newCount = currentCount + count;
+
+    // Prevent inventory from becoming negative.
+    if (newCount < 0) {
+      throw new Error('Not enough stock');
+    }
+
+    // Prevent unsafe integer values.
+    if (!Number.isSafeInteger(newCount)) {
+      throw new Error('Invalid shelf quantity');
+    }
+
     if (!this.books[bookId]) {
       this.books[bookId] = {};
     }
 
-    const currentCount = this.books[bookId][shelf] ?? 0;
-    this.books[bookId][shelf] = currentCount + count;
+    this.books[bookId][shelf] = newCount;
   }
 
   async getCopiesOnShelf(bookId: BookID, shelf: ShelfId): Promise<number> {

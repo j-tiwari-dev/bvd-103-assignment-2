@@ -80,4 +80,86 @@ describe('fulfilOrder', () => {
       'Order not found'
     );
   });
+
+  test.each([-2, 0, 2.5, Number.NaN])(
+    'rejects invalid fulfilment quantity %s without changing stock',
+    async (quantity) => {
+      const warehouse = new InMemoryWarehouse();
+
+      await warehouse.placeBookOnShelf('book-1', 'shelf-a', 5);
+
+      const orderId = await warehouse.placeOrder({
+        'book-1': 2,
+      });
+
+      await expect(
+        fulfilOrder(
+          orderId,
+          [
+            {
+              book: 'book-1',
+              shelf: 'shelf-a',
+              numberOfBooks: quantity,
+            },
+          ],
+          warehouse
+        )
+      ).rejects.toThrow();
+
+      const remainingStock = await warehouse.getCopiesOnShelf(
+        'book-1',
+        'shelf-a'
+      );
+
+      expect(remainingStock).toBe(5);
+
+      const order = await warehouse.getOrder(orderId);
+
+      expect(order).toEqual({
+        'book-1': 2,
+      });
+    }
+  );
+
+  test('rejects duplicate shelf entries exceeding available stock', async () => {
+    const warehouse = new InMemoryWarehouse();
+
+    await warehouse.placeBookOnShelf('book-1', 'shelf-a', 3);
+
+    const orderId = await warehouse.placeOrder({
+      'book-1': 4,
+    });
+
+    await expect(
+      fulfilOrder(
+        orderId,
+        [
+          {
+            book: 'book-1',
+            shelf: 'shelf-a',
+            numberOfBooks: 2,
+          },
+          {
+            book: 'book-1',
+            shelf: 'shelf-a',
+            numberOfBooks: 2,
+          },
+        ],
+        warehouse
+      )
+    ).rejects.toThrow('Not enough stock');
+
+    const remainingStock = await warehouse.getCopiesOnShelf(
+      'book-1',
+      'shelf-a'
+    );
+
+    expect(remainingStock).toBe(3);
+
+    const order = await warehouse.getOrder(orderId);
+
+    expect(order).toEqual({
+      'book-1': 4,
+    });
+  });
 });

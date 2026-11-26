@@ -1,7 +1,7 @@
 {
-  "name": "assignment-5",
+  "name": "assignment-6",
   "version": "1.0.0",
-  "description": "BVD 103 Assignment 5 backend API with OpenAPI documentation, generated TypeScript SDK, warehouse inventory, orders, and automated testing.",
+  "description": "BVD 103 Assignment 6 backend API with Docker Compose, Nginx reverse proxy, round-robin load balancing, API caching, generated TypeScript SDK, warehouse inventory, orders, and automated testing.",
   "main": "src/server.ts",
   "scripts": {
     "start-server": "tsx ./src/server.ts",
