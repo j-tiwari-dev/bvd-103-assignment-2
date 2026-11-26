@@ -30,7 +30,7 @@ interface PlaceOrderResponse {
   orderId: string;
 }
 
-interface ErrorResponse {
+interface OrderErrorResponse {
   message: string;
 }
 
@@ -56,7 +56,7 @@ export class OrdersController extends Controller {
   @SuccessResponse('201', 'Order created')
   public async createOrder(
     @Body() body: PlaceOrderRequest,
-    @Res() badRequest: TsoaResponse<400, ErrorResponse>
+    @Res() badRequest: TsoaResponse<400, OrderErrorResponse>
   ): Promise<PlaceOrderResponse> {
     if (
       !body ||
@@ -70,23 +70,19 @@ export class OrdersController extends Controller {
     const warehouse = getWarehouse();
 
     try {
-      const result = await placeOrder(
-        body.books,
-        warehouse,
-        async (bookId) => {
-          if (!ObjectId.isValid(bookId)) {
-            return false;
-          }
-
-          const db = getDatabase();
-
-          const book = await db.collection('books').findOne({
-            _id: new ObjectId(bookId),
-          });
-
-          return book !== null;
+      const result = await placeOrder(body.books, warehouse, async (bookId) => {
+        if (!ObjectId.isValid(bookId)) {
+          return false;
         }
-      );
+
+        const db = getDatabase();
+
+        const book = await db.collection('books').findOne({
+          _id: new ObjectId(bookId),
+        });
+
+        return book !== null;
+      });
 
       this.setStatus(201);
 
@@ -126,8 +122,8 @@ export class OrdersController extends Controller {
   public async fulfilOrder(
     @Path() orderId: string,
     @Body() body: FulfilOrderRequest,
-    @Res() badRequest: TsoaResponse<400, ErrorResponse>,
-    @Res() notFound: TsoaResponse<404, ErrorResponse>
+    @Res() badRequest: TsoaResponse<400, OrderErrorResponse>,
+    @Res() notFound: TsoaResponse<404, OrderErrorResponse>
   ): Promise<void> {
     if (!body || !Array.isArray(body.booksFulfilled)) {
       return badRequest(400, {
@@ -138,11 +134,7 @@ export class OrdersController extends Controller {
     const warehouse = getWarehouse();
 
     try {
-      await fulfilOrder(
-        orderId,
-        body.booksFulfilled,
-        warehouse
-      );
+      await fulfilOrder(orderId, body.booksFulfilled, warehouse);
 
       this.setStatus(204);
     } catch (error) {
