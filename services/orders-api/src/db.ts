@@ -1,7 +1,7 @@
 import { MongoClient, Db } from 'mongodb';
 
 const MONGODB_URL = process.env.MONGODB_URL || 'mongodb://localhost:27017';
-const DATABASE_NAME = 'mcmasterful-books';
+const DATABASE_NAME = 'mcmasterful-books-orders';
 
 let client: MongoClient | null = null;
 let db: Db | null = null;

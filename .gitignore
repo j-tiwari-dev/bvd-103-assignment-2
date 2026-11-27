@@ -131,3 +131,7 @@ dist
 # Generated OpenAPI and TypeScript SDK files
 /build/
 /generated-client/
+
+# Assignment 7 generated service files
+services/*/build/
+services/*/node_modules

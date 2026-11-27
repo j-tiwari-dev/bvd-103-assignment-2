@@ -1,19 +1,14 @@
 {
-  "name": "assignment-6",
+  "name": "assignment-7-warehouse-api",
   "version": "1.0.0",
-  "description": "BVD 103 Assignment 6 backend API with Docker Compose, Nginx reverse proxy, round-robin load balancing, API caching, generated TypeScript SDK, warehouse inventory, orders, and automated testing.",
+  "description": "warehouse-api microservice for Assignment 7",
   "main": "src/server.ts",
   "scripts": {
-    "start-server": "tsx ./src/server.ts",
-    "lint": "eslint",
-    "lint:fix": "eslint . --ext .ts --fix",
-    "check-types": "tsc --noEmit",
-    "test": "vitest run src",
-    "test:ci": "vitest run src",
-    "test:api": "vitest run --config vitest.api.config.mts",
+    "start": "tsx src/server.ts",
     "swagger": "tsoa spec",
     "routes": "tsoa routes",
-    "generate-sdk": "openapi-generator-cli generate -i build/swagger.json -g typescript-fetch -o generated-client"
+    "check-types": "tsc --noEmit",
+    "test": "vitest run"
   },
   "keywords": [],
   "author": "",
