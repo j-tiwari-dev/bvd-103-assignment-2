@@ -79,11 +79,11 @@ Provides combined OpenAPI documentation for the three APIs.
 
 Each API has its own MongoDB server and database.
 
-| Service | Database |
-|---|---|
-| Books API | mcmasterful-books-listings |
+| Service       | Database                    |
+| ------------- | --------------------------- |
+| Books API     | mcmasterful-books-listings  |
 | Warehouse API | mcmasterful-books-warehouse |
-| Orders API | mcmasterful-books-orders |
+| Orders API    | mcmasterful-books-orders    |
 
 The Warehouse MongoDB server uses a single-node replica set
 named `rs0` to support transactions.
@@ -103,20 +103,20 @@ The application uses a topic exchange:
 
 ### Book Events
 
-| Event | Publisher | Purpose |
-|---|---|---|
-| BookAdded | Books API | Synchronize new books |
-| BookUpdated | Books API | Synchronize book changes |
-| BookDeleted | Books API | Synchronize book deletion |
-| BookStocked | Warehouse API | Synchronize stock totals |
+| Event       | Publisher     | Purpose                   |
+| ----------- | ------------- | ------------------------- |
+| BookAdded   | Books API     | Synchronize new books     |
+| BookUpdated | Books API     | Synchronize book changes  |
+| BookDeleted | Books API     | Synchronize book deletion |
+| BookStocked | Warehouse API | Synchronize stock totals  |
 
 ### Order Events
 
-| Event | Publisher | Purpose |
-|---|---|---|
-| OrderFulfilmentRequested | Orders API | Request inventory fulfilment |
-| OrderFulfilled | Warehouse API | Confirm successful fulfilment |
-| OrderFulfilmentFailed | Warehouse API | Report fulfilment failure |
+| Event                    | Publisher     | Purpose                       |
+| ------------------------ | ------------- | ----------------------------- |
+| OrderFulfilmentRequested | Orders API    | Request inventory fulfilment  |
+| OrderFulfilled           | Warehouse API | Confirm successful fulfilment |
+| OrderFulfilmentFailed    | Warehouse API | Report fulfilment failure     |
 
 ### Order Fulfilment Process
 
@@ -229,24 +229,24 @@ persistent database and RabbitMQ volumes.
 
 ## Application URLs
 
-| Component | URL |
-|---|---|
-| Website | http://localhost:8081 |
-| Books API | http://localhost:8081/api/books |
-| Warehouse API | http://localhost:8081/api/warehouse |
-| Orders API | http://localhost:8081/api/orders |
-| Swagger UI | http://localhost:8081/api/docs/ |
-| RabbitMQ Management | http://localhost:15672 |
+| Component           | URL                                 |
+| ------------------- | ----------------------------------- |
+| Website             | http://localhost:8081               |
+| Books API           | http://localhost:8081/api/books     |
+| Warehouse API       | http://localhost:8081/api/warehouse |
+| Orders API          | http://localhost:8081/api/orders    |
+| Swagger UI          | http://localhost:8081/api/docs/     |
+| RabbitMQ Management | http://localhost:15672              |
 
 ### Direct API Ports
 
-| Service | Port |
-|---|---|
-| Books API | 3001 |
-| Warehouse API | 3002 |
-| Orders API | 3003 |
-| Swagger API | 3004 |
-| Nginx | 8081 |
+| Service             | Port  |
+| ------------------- | ----- |
+| Books API           | 3001  |
+| Warehouse API       | 3002  |
+| Orders API          | 3003  |
+| Swagger API         | 3004  |
+| Nginx               | 8081  |
 | RabbitMQ Management | 15672 |
 
 The APIs listen internally on port 3000.
