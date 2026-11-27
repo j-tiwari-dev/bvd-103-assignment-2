@@ -1,399 +1,449 @@
-# McMasterful Books - Assignment 6
+# McMasterful Books - Assignment 7
 
 BVD 103 | McMaster Continuing Education
 
 ## Overview
 
-Assignment 6 extends the McMasterful Books application with
+Assignment 7 transforms the McMasterful Books application from a
+single backend into an event-driven microservices architecture.
 
-Docker-based deployment, Nginx reverse proxy, horizontal scaling,
+The application uses separate Books, Warehouse, and Orders APIs,
+RabbitMQ messaging, independent MongoDB databases, Nginx reverse
+proxy routing, and combined Swagger documentation.
 
-round-robin load balancing, and HTTP caching.
-
-The application retains the Books, Warehouse, and Orders APIs
-
-developed in previous assignments.
+The frontend continues to support book browsing, inventory
+visibility, shopping cart functionality, and order placement.
 
 ## Features
 
-- Koa REST API
-
+- Three independent REST API services
+- Koa and TypeScript
 - MongoDB persistence
-
+- Separate databases for each API
+- RabbitMQ event-driven communication
 - Book catalogue management
-
 - Warehouse inventory and shelf management
-
-- Book ordering and fulfilment
-
+- Order creation and asynchronous fulfilment
+- MongoDB transactions for inventory deductions
+- Event-based stock synchronization
+- Transactional fulfilment outbox
 - tsoa OpenAPI generation
-
-- Swagger UI documentation
-
+- Combined Swagger documentation
 - Generated TypeScript SDK
-
 - Docker Compose deployment
-
 - Nginx reverse proxy
-
-- Three backend instances
-
-- Round-robin load balancing
-
-- HTTP caching
-
-- Vitest unit and API integration tests
-
+- McMasterful Books frontend
+- Vitest automated testing
 - GitHub Actions CI
 
 ## Architecture
 
-The application uses six Docker containers:
+Assignment 7 separates the backend into four services.
 
-1. Nginx reverse proxy
+### Books API
 
-2. McMasterful Books frontend
+Responsible for:
 
-3. Backend instance 1
+- Creating books
+- Updating books
+- Deleting books
+- Listing and searching books
+- Maintaining locally synchronized stock information
 
-4. Backend instance 2
+### Warehouse API
 
-5. Backend instance 3
+Responsible for:
 
-6. MongoDB database
+- Warehouse inventory
+- Shelf management
+- Stock placement
+- Stock deductions
+- Transactional fulfilment processing
+- Maintaining a local book catalogue
 
-Nginx receives incoming requests on port 8080.
+### Orders API
 
-Frontend requests are forwarded to the frontend container
+Responsible for:
 
-on port 9080.
+- Creating orders
+- Listing orders
+- Tracking order status
+- Requesting fulfilment through RabbitMQ
+- Processing fulfilment results
 
-API requests are distributed across three backend instances,
+### Swagger API
 
-each listening internally on port 3000.
+Provides combined OpenAPI documentation for the three APIs.
 
-All backend instances connect to the same MongoDB database.
+## Database Architecture
+
+Each API has its own MongoDB server and database.
+
+| Service | Database |
+|---|---|
+| Books API | mcmasterful-books-listings |
+| Warehouse API | mcmasterful-books-warehouse |
+| Orders API | mcmasterful-books-orders |
+
+The Warehouse MongoDB server uses a single-node replica set
+named `rs0` to support transactions.
+
+Each API manages its own data.
+
+Information needed by other services is synchronized through
+RabbitMQ events.
+
+## RabbitMQ Messaging
+
+RabbitMQ provides asynchronous communication between services.
+
+The application uses a topic exchange:
+
+`mcmasterful.events`
+
+### Book Events
+
+| Event | Publisher | Purpose |
+|---|---|---|
+| BookAdded | Books API | Synchronize new books |
+| BookUpdated | Books API | Synchronize book changes |
+| BookDeleted | Books API | Synchronize book deletion |
+| BookStocked | Warehouse API | Synchronize stock totals |
+
+### Order Events
+
+| Event | Publisher | Purpose |
+|---|---|---|
+| OrderFulfilmentRequested | Orders API | Request inventory fulfilment |
+| OrderFulfilled | Warehouse API | Confirm successful fulfilment |
+| OrderFulfilmentFailed | Warehouse API | Report fulfilment failure |
+
+### Order Fulfilment Process
+
+1. A customer creates an order.
+2. Orders API stores the order in its database.
+3. The customer requests fulfilment.
+4. Orders API publishes an OrderFulfilmentRequested event.
+5. Warehouse API receives the request.
+6. Warehouse validates available inventory.
+7. MongoDB transactions protect multi-shelf deductions.
+8. Warehouse records the fulfilment result.
+9. RabbitMQ delivers the result to Orders API.
+10. Orders API updates the order status.
+11. Stock events synchronize inventory information with Books API.
+
+Order fulfilment is asynchronous.
+
+A fulfilment request returns HTTP 202 Accepted while processing
+continues through RabbitMQ.
 
 ## Requirements
 
-- Docker
-
+- Docker Desktop or Docker Engine
 - Docker Compose
-
 - Node.js 24 for local development
-
-- Java 17 for OpenAPI SDK generation
-
 - npm
+- Java 17 for OpenAPI SDK generation
+- Git
 
 ## Installation
 
 Clone the repository:
 
-bash
-
+```bash
 git clone https://github.com/j-tiwari-dev/bvd-103-assignment-2.git
+```
 
 Enter the project directory:
 
-bash
-
+```bash
 cd bvd-103-assignment-2
+```
 
-Switch to the Assignment 6 branch:
+Install dependencies:
 
-bash
-
-git switch assignment-6
-
-Install dependencies for local development:
-
-bash
-
+```bash
 npm ci
+```
 
-## Running Assignment 6
+## Running Assignment 7
 
 Start the application:
 
-bash
-
-docker compose up -d
+```bash
+docker compose -f docker-compose.assignment7.yaml up -d
+```
 
 Check container status:
 
-bash
+```bash
+docker compose -f docker-compose.assignment7.yaml ps
+```
 
-docker compose ps
+The deployment includes:
 
-The following services should be running:
-
-- mongo
-
-- backend1
-
-- backend2
-
-- backend3
-
+- mongo-books
+- mongo-warehouse
+- mongo-orders
+- rabbitmq
+- books-api
+- warehouse-api
+- orders-api
+- swagger-api
 - frontend
-
 - nginx
 
-Stop the application:
+The prepare service generates API documentation, routes,
+and the TypeScript SDK before the application services start.
 
-bash
+### Initialize Warehouse MongoDB
 
-docker compose down
+For a new Warehouse MongoDB volume, initialize the replica set:
 
-Do not use docker compose down -v unless you intend
+```bash
+docker compose -f docker-compose.assignment7.yaml exec \
+  mongo-warehouse mongosh --eval \
+  'rs.initiate({_id:"rs0",members:[{_id:0,host:"mongo-warehouse:27017"}]})'
+```
 
-to remove the persistent database and dependency volumes.
+Verify the replica set:
+
+```bash
+docker compose -f docker-compose.assignment7.yaml exec \
+  mongo-warehouse mongosh --quiet --eval \
+  'rs.status().members.map(m => ({name:m.name,state:m.stateStr}))'
+```
+
+The Warehouse MongoDB instance should report PRIMARY.
+
+If the replica set is already initialized, do not initialize it again.
+
+### Stop the Application
+
+```bash
+docker compose -f docker-compose.assignment7.yaml down
+```
+
+Do not use `down -v` unless you intentionally want to delete
+persistent database and RabbitMQ volumes.
 
 ## Application URLs
 
-Website:
-
-http://localhost:8080
-
-API health endpoint:
-
-http://localhost:8080/api/health
-
-Books API:
-
-http://localhost:8080/api/books
-
-Swagger UI:
-
-http://localhost:8080/api/docs
-
-## Horizontal Scaling
-
-Assignment 6 runs three backend instances:
-
-- backend1
-
-- backend2
-
-- backend3
-
-Nginx distributes incoming API requests using round-robin
-
-load balancing.
-
-Each backend uses the same MongoDB database.
-
-### Verify Load Balancing
-
-Run:
-
-bash
-
-for i in $(seq 1 9); do
-
-curl -s -D - -o /dev/null \
-
-    http://localhost:8080/api/health \
-
-    | grep -i "X-Backend-Server"
-
-done
-
-Three different backend addresses should appear repeatedly.
-
-## HTTP Caching
-
-Nginx caches selected successful API responses.
-
-| Resource | Cache Behaviour |
-
+| Component | URL |
 |---|---|
+| Website | http://localhost:8081 |
+| Books API | http://localhost:8081/api/books |
+| Warehouse API | http://localhost:8081/api/warehouse |
+| Orders API | http://localhost:8081/api/orders |
+| Swagger UI | http://localhost:8081/api/docs/ |
+| RabbitMQ Management | http://localhost:15672 |
 
-| Unfiltered book listings | 30 seconds |
+### Direct API Ports
 
-| Individual book details | 30 seconds |
+| Service | Port |
+|---|---|
+| Books API | 3001 |
+| Warehouse API | 3002 |
+| Orders API | 3003 |
+| Swagger API | 3004 |
+| Nginx | 8081 |
+| RabbitMQ Management | 15672 |
 
-| Filtered book searches | Bypass cache |
+The APIs listen internally on port 3000.
 
-| Orders | Not cached |
+Nginx routes requests to the appropriate service.
 
-| Warehouse operations | Not cached |
+## OpenAPI Documentation
 
-| Book creation, update and deletion | Not cached |
+Each API generates its own OpenAPI specification.
 
-Frontend development assets retain Vite's cache headers.
+Generate the specifications and routes:
 
-### Verify Book Caching
+```bash
+for service in books-api warehouse-api orders-api; do
+  (
+    cd "services/$service" &&
+    npx tsoa spec &&
+    npx tsoa routes
+  ) || exit 1
+done
+```
 
-Run:
+Generate the combined Swagger specification:
 
-bash
-
-curl -s -D - -o /dev/null \
-
-http://localhost:8080/api/books \
-
-| grep -i "X-Cache-Status"
-
-Repeat the command.
-
-Expected cache behaviour:
-
-- MISS: Response retrieved from the backend
-
-- HIT: Response served from the Nginx cache
-
-- BYPASS: Request intentionally bypasses caching
-
-Book details may remain stale for up to 30 seconds
-
-after inventory changes or deletion.
-
-## OpenAPI and TypeScript SDK
-
-Generate the OpenAPI specification:
-
-bash
-
-npm run swagger
-
-Generate tsoa routes:
-
-bash
-
-npm run routes
+```bash
+node services/swagger-api/src/combine-swagger.cjs
+```
 
 Generate the TypeScript SDK:
 
-bash
+```bash
+npx openapi-generator-cli generate \
+  -i services/swagger-api/build/swagger.json \
+  -g typescript-fetch \
+  -o generated-client
+```
 
-npm run generate-sdk
-
-Java must be installed for SDK generation.
+Java 17 is required for SDK generation.
 
 ## Testing
 
 ### TypeScript
 
-bash
-
+```bash
 npm run check-types
+```
 
-### Lint
+Check each service:
 
-bash
+```bash
+for service in books-api warehouse-api orders-api swagger-api; do
+  (
+    cd "services/$service" &&
+    npx tsc --noEmit
+  ) || exit 1
+done
+```
 
+### ESLint
+
+```bash
 npm run lint
+```
+
+### Prettier
+
+```bash
+npx prettier --check .
+```
 
 ### Unit Tests
 
-bash
-
+```bash
 npm run test:ci
+```
 
-### SDK API Tests
+The unit tests use mongodb-memory-server.
 
-Start the Docker application before running:
+MongoDB binary availability may vary depending on the operating
+system and CPU architecture.
 
-bash
+### API Integration Tests
 
+Start the Assignment 7 application before running:
+
+```bash
 npm run test:api
+```
 
-The local API tests use:
+The API tests use the generated TypeScript SDK.
 
-http://localhost:8080/api
+The Assignment 7 API base URL is:
 
-The API endpoint can be overridden using
+`http://localhost:8081/api`
 
-the API_BASE_URL environment variable.
+It can be configured through the API_BASE_URL environment variable.
 
-## Test Coverage
+### Docker Configuration Validation
 
-The project includes tests for:
+```bash
+docker compose -f docker-compose.assignment7.yaml config --quiet
+```
 
-- Book listing and lookup
+### Check Service Health
 
-- Book creation, updating and deletion
+```bash
+curl http://localhost:8081/api/books
+curl http://localhost:8081/api/orders
+curl http://localhost:3004/health
+```
 
-- Invalid book IDs
+## Integration Testing
 
-- Missing books
+The following application workflow was manually verified:
 
-- Invalid book data
+1. Create a book.
+2. Synchronize the book with Warehouse and Orders.
+3. Add inventory to a warehouse shelf.
+4. Synchronize stock with Books API.
+5. Create an order.
+6. Request order fulfilment.
+7. Process inventory deductions.
+8. Update the order status.
+9. Synchronize the remaining stock.
 
-- MongoDB regex escaping
+### Verified Example
 
-- Warehouse quantity validation
+Initial warehouse inventory: 5 books
 
-- Order placement
+Fulfilment quantity: 2 books
 
-- Order fulfilment
+Remaining warehouse inventory: 3 books
 
-- Inventory deductions
+Final order status: fulfilled
 
-- Generated SDK functionality
+Books API synchronized stock: 3 books
 
-Latest verified results:
-
-- 47 unit tests passed
-
-- 15 SDK API tests passed
-
-## Assignment 5 Feedback Corrections
-
-The Assignment 6 branch also includes improvements based
-
-on Assignment 5 feedback:
-
-- Removed duplicate active API routing
-
-- Improved warehouse quantity validation
-
-- Rejected fractional and invalid quantities
-
-- Added duplicate fulfilment validation
-
-- Improved multiple-filter handling
-
-- Escaped special characters in MongoDB searches
-
-- Improved HTTP 400 and 404 error responses
-
-- Added SDK CRUD and failure-case tests
-
-- Improved API documentation
+The frontend was also tested for book browsing,
+adding a book to the cart, and placing orders.
 
 ## GitHub Actions
 
-GitHub Actions runs four jobs:
+The repository includes automated CI checks for:
 
 1. Format and Lint
-
-2. Check Types
-
+2. TypeScript validation
 3. Unit and Warehouse Tests
+4. Generated SDK API Integration Tests
 
-4. Generated SDK API Tests
+The Assignment 7 workflow generates service-specific OpenAPI
+specifications, combines Swagger documentation, generates the SDK,
+and starts the required services for integration testing.
 
-The workflow uses Node.js 24 and Java 17.
+The workflow uses Node.js and Java for code generation and testing.
 
-All four CI jobs were verified as passing.
+## Reliability Considerations
 
-## Assignment 6 Submission
+The application uses durable RabbitMQ queues and persistent
+messages for event delivery.
+
+Warehouse fulfilment uses MongoDB transactions to protect
+multi-shelf inventory deductions.
+
+A fulfilment outbox records events for subsequent publishing.
+
+Additional production-hardening considerations include:
+
+- Initial synchronization of existing records
+- Recovery from failed event publishing
+- Duplicate event handling
+- Out-of-order event delivery
+- RabbitMQ reconnection
+- Monitoring and dead-letter handling
+
+## Assignment 7 Submission
 
 Repository:
 
 https://github.com/j-tiwari-dev/bvd-103-assignment-2
 
-Branch:
+Development branch:
 
-assignment-6
+`main`
 
-Required release tag:
+Release tag:
 
-assignment-6
+`assignment-7`
 
-The final submission consists of a text file containing
+The final submission should include the repository link and
+the Assignment 7 release tag, subject to the instructor's
+submission instructions.
 
-the GitHub repository link and the Assignment 6 release tag.
+## Previous Assignments
+
+Assignment 6 introduced Docker deployment, Nginx reverse proxy,
+round-robin load balancing, and HTTP caching.
+
+Assignment 7 extends the application with independently deployed
+services, RabbitMQ messaging, separate databases, and
+event-driven synchronization.
