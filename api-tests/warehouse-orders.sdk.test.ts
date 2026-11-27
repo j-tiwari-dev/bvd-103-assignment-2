@@ -8,7 +8,7 @@ import {
 import { createTestBook, removeTestBook, type TestBook } from './test_data';
 
 const configuration = new Configuration({
-  basePath: process.env.API_BASE_URL ?? 'http://localhost:8080/api',
+  basePath: process.env.API_BASE_URL ?? 'http://localhost:8081/api',
 });
 
 const booksApi = new BooksApi(configuration);
@@ -79,26 +79,41 @@ describe('Warehouse and Orders generated SDK', () => {
       },
     });
 
-    const shelvesAfter = await warehouseApi.findBookOnShelf({
-      bookId: testBook.id,
-    });
+    // Wait for asynchronous RabbitMQ fulfilment.
+    await expect
+      .poll(
+        async () => {
+          const orders = await ordersApi.listOrders();
+          return orders.find((order) => order.orderId === createdOrder.orderId)
+            ?.status;
+        },
+        { timeout: 30000, interval: 1000 }
+      )
+      .toBe('fulfilled');
 
-    const testShelfAfter = shelvesAfter.find((item) => item.shelf === shelf);
+    await expect
+      .poll(
+        async () => {
+          const shelves = await warehouseApi.findBookOnShelf({
+            bookId: testBook.id,
+          });
+          return shelves.find((item) => item.shelf === shelf)?.count;
+        },
+        { timeout: 30000, interval: 1000 }
+      )
+      .toBe(3);
 
-    expect(testShelfAfter?.count).toBe(3);
-
-    const ordersAfter = await ordersApi.listOrders();
-
-    expect(
-      ordersAfter.find((order) => order.orderId === createdOrder.orderId)
-    ).toBeUndefined();
-
-    const book = await booksApi.getBookById({
-      id: testBook.id,
-    });
-
-    // The test book is newly created and starts with zero stock.
-    expect(book.stock).toBeGreaterThanOrEqual(3);
+    await expect
+      .poll(
+        async () => {
+          const book = await booksApi.getBookById({
+            id: testBook.id,
+          });
+          return book.stock;
+        },
+        { timeout: 30000, interval: 1000 }
+      )
+      .toBe(3);
   });
 
   test.each([0, -2, 2.5])(

@@ -1,7 +1,7 @@
 import { BooksApi, Configuration } from '../generated-client';
 
 const configuration = new Configuration({
-  basePath: process.env.API_BASE_URL ?? 'http://localhost:8080/api',
+  basePath: process.env.API_BASE_URL ?? 'http://localhost:8081/api',
 });
 
 const booksApi = new BooksApi(configuration);

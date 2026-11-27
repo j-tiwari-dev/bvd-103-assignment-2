@@ -94,15 +94,11 @@ bash
 
 git clone https://github.com/j-tiwari-dev/bvd-103-assignment-2.git
 
-
-
 Enter the project directory:
 
 bash
 
 cd bvd-103-assignment-2
-
-
 
 Switch to the Assignment 6 branch:
 
@@ -110,15 +106,11 @@ bash
 
 git switch assignment-6
 
-
-
 Install dependencies for local development:
 
 bash
 
 npm ci
-
-
 
 ## Running Assignment 6
 
@@ -128,15 +120,11 @@ bash
 
 docker compose up -d
 
-
-
 Check container status:
 
 bash
 
 docker compose ps
-
-
 
 The following services should be running:
 
@@ -157,8 +145,6 @@ Stop the application:
 bash
 
 docker compose down
-
-
 
 Do not use docker compose down -v unless you intend
 
@@ -206,15 +192,13 @@ bash
 
 for i in $(seq 1 9); do
 
-  curl -s -D - -o /dev/null \
+curl -s -D - -o /dev/null \
 
     http://localhost:8080/api/health \
 
     | grep -i "X-Backend-Server"
 
 done
-
-
 
 Three different backend addresses should appear repeatedly.
 
@@ -248,11 +232,9 @@ bash
 
 curl -s -D - -o /dev/null \
 
-  http://localhost:8080/api/books \
+http://localhost:8080/api/books \
 
-  | grep -i "X-Cache-Status"
-
-
+| grep -i "X-Cache-Status"
 
 Repeat the command.
 
@@ -276,23 +258,17 @@ bash
 
 npm run swagger
 
-
-
 Generate tsoa routes:
 
 bash
 
 npm run routes
 
-
-
 Generate the TypeScript SDK:
 
 bash
 
 npm run generate-sdk
-
-
 
 Java must be installed for SDK generation.
 
@@ -304,23 +280,17 @@ bash
 
 npm run check-types
 
-
-
 ### Lint
 
 bash
 
 npm run lint
 
-
-
 ### Unit Tests
 
 bash
 
 npm run test:ci
-
-
 
 ### SDK API Tests
 
@@ -329,8 +299,6 @@ Start the Docker application before running:
 bash
 
 npm run test:api
-
-
 
 The local API tests use:
 

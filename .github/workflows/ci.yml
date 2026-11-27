@@ -74,8 +74,8 @@ jobs:
           --health-retries 10
 
     env:
-        MONGODB_URL: mongodb://localhost:27017
-        API_BASE_URL: http://localhost:3000
+      MONGODB_URL: mongodb://localhost:27017
+      API_BASE_URL: http://localhost:3000
 
     steps:
       - uses: actions/checkout@v4

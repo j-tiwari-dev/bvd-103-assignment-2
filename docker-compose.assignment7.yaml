@@ -1,0 +1,181 @@
+x-api-common: &api-common
+  image: node:24-bookworm
+  volumes:
+    - .:/workspace
+    - backend_node_modules:/workspace/node_modules:ro
+  environment:
+    PORT: '3000'
+    RABBITMQ_URL: amqp://rabbitmq:5672
+  networks:
+    - books-network
+  restart: unless-stopped
+
+services:
+  mongo-books:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo_books_data:/data/db
+    networks:
+      - books-network
+
+  mongo-warehouse:
+    image: mongo:7
+    restart: unless-stopped
+    command: ['mongod', '--replSet', 'rs0', '--bind_ip_all']
+    volumes:
+      - mongo_warehouse_data:/data/db
+    networks:
+      - books-network
+
+  mongo-orders:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo_orders_data:/data/db
+    networks:
+      - books-network
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    restart: unless-stopped
+    ports:
+      - '15672:15672'
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - books-network
+
+  prepare:
+    image: node:24-bookworm
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - backend_node_modules:/workspace/node_modules
+    command: >
+      sh -c "
+        apt-get update &&
+        apt-get install -y --no-install-recommends openjdk-17-jre-headless &&
+        rm -rf /var/lib/apt/lists/* &&
+        npm ci &&
+        cd services/books-api &&
+        npx tsoa routes &&
+        npx tsoa spec &&
+        cd ../warehouse-api &&
+        npx tsoa routes &&
+        npx tsoa spec &&
+        cd ../orders-api &&
+        npx tsoa routes &&
+        npx tsoa spec &&
+        cd ../.. &&
+        node services/swagger-api/src/combine-swagger.cjs &&
+        npx openapi-generator-cli generate -i services/swagger-api/build/swagger.json -g typescript-fetch -o generated-client
+      "
+    networks:
+      - books-network
+    restart: 'no'
+
+  books-api:
+    <<: *api-common
+    working_dir: /workspace/services/books-api
+    environment:
+      PORT: '3000'
+      MONGODB_URL: mongodb://mongo-books:27017
+      RABBITMQ_URL: amqp://rabbitmq:5672
+    command: npm run start
+    ports:
+      - '3001:3000'
+    depends_on:
+      prepare:
+        condition: service_completed_successfully
+      mongo-books:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+
+  warehouse-api:
+    <<: *api-common
+    working_dir: /workspace/services/warehouse-api
+    environment:
+      PORT: '3000'
+      MONGODB_URL: mongodb://mongo-warehouse:27017/?replicaSet=rs0
+      RABBITMQ_URL: amqp://rabbitmq:5672
+    command: npm run start
+    ports:
+      - '3002:3000'
+    depends_on:
+      prepare:
+        condition: service_completed_successfully
+      mongo-warehouse:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+
+  orders-api:
+    <<: *api-common
+    working_dir: /workspace/services/orders-api
+    environment:
+      PORT: '3000'
+      MONGODB_URL: mongodb://mongo-orders:27017
+      RABBITMQ_URL: amqp://rabbitmq:5672
+    command: npm run start
+    ports:
+      - '3003:3000'
+    depends_on:
+      prepare:
+        condition: service_completed_successfully
+      mongo-orders:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+
+  swagger-api:
+    <<: *api-common
+    working_dir: /workspace/services/swagger-api
+    command: npm run start
+    ports:
+      - '3004:3000'
+    depends_on:
+      prepare:
+        condition: service_completed_successfully
+
+  frontend:
+    image: ghcr.io/mcmastercce/bvd-103-mcmasterful-books/mcmasterful-books-docker:main
+    restart: unless-stopped
+    volumes:
+      - ./adapter:/source/adapter:ro
+      - ./generated-client:/source/generated-client:ro
+    expose:
+      - '9080'
+    depends_on:
+      prepare:
+        condition: service_completed_successfully
+    networks:
+      - books-network
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - '8081:8080'
+    volumes:
+      - ./nginx.assignment7.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - books-api
+      - warehouse-api
+      - orders-api
+      - swagger-api
+      - frontend
+    networks:
+      - books-network
+
+volumes:
+  mongo_books_data:
+  mongo_warehouse_data:
+  mongo_orders_data:
+  rabbitmq_data:
+  backend_node_modules:
+
+networks:
+  books-network:
+    driver: bridge

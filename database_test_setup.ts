@@ -4,9 +4,7 @@ import { afterAll, beforeAll } from 'vitest';
 let instance: MongoMemoryServer;
 
 export async function setup(): Promise<void> {
-  instance = await MongoMemoryServer.create({
-    binary: { version: '7.0.7' },
-  });
+  instance = await MongoMemoryServer.create();
 
   const uri = instance.getUri();
 

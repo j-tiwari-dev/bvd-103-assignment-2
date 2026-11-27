@@ -17,7 +17,7 @@ import {
 
 import { ObjectId } from 'mongodb';
 import { getDatabase } from '../db';
-import { getWarehouse } from '../warehouse/get_warehouse';
+import { publishBookEvent } from '../events';
 
 export interface BookInput {
   name: string;
@@ -86,10 +86,6 @@ function formatBookInput(book: BookInput): BookInput {
   };
 }
 
-function calculateTotalStock(copies: Record<string, number>): number {
-  return Object.values(copies).reduce((total, count) => total + count, 0);
-}
-
 @Route('books')
 @Tags('Books')
 export class BooksController extends Controller {
@@ -140,12 +136,9 @@ export class BooksController extends Controller {
 
     const books = await database.collection('books').find(query).toArray();
 
-    const warehouse = getWarehouse();
-
     return Promise.all(
       books.map(async (book) => {
         const id = book._id.toString();
-        const copies = await warehouse.getCopies(id);
 
         return {
           id,
@@ -154,7 +147,7 @@ export class BooksController extends Controller {
           description: book.description as string,
           price: book.price as number,
           image: book.image as string,
-          stock: calculateTotalStock(copies),
+          stock: (book.stock as number) ?? 0,
         };
       })
     );
@@ -191,8 +184,6 @@ export class BooksController extends Controller {
       });
     }
 
-    const copies = await getWarehouse().getCopies(id);
-
     return {
       id: book._id.toString(),
       name: book.name as string,
@@ -200,7 +191,7 @@ export class BooksController extends Controller {
       description: book.description as string,
       price: book.price as number,
       image: book.image as string,
-      stock: calculateTotalStock(copies),
+      stock: (book.stock as number) ?? 0,
     };
   }
 
@@ -225,6 +216,11 @@ export class BooksController extends Controller {
     const result = await getDatabase()
       .collection<BookInput>('books')
       .insertOne(formatBookInput(body));
+
+    await publishBookEvent('BookAdded', {
+      id: result.insertedId.toString(),
+      ...formatBookInput(body),
+    });
 
     this.setStatus(201);
 
@@ -276,6 +272,11 @@ export class BooksController extends Controller {
       });
     }
 
+    await publishBookEvent('BookUpdated', {
+      id,
+      ...formatBookInput(body),
+    });
+
     return { id };
   }
 
@@ -312,6 +313,8 @@ export class BooksController extends Controller {
       });
       return;
     }
+
+    await publishBookEvent('BookDeleted', { id });
 
     this.setStatus(204);
   }

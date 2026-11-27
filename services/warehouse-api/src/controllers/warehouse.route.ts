@@ -15,6 +15,7 @@ import {
 import { ObjectId } from 'mongodb';
 import { getDatabase } from '../db';
 import { getWarehouse } from '../warehouse/get_warehouse';
+import { publishBookStocked } from '../events';
 
 interface PlaceBooksRequest {
   bookId: string;
@@ -72,8 +73,8 @@ export class WarehouseController extends Controller {
 
     const db = getDatabase();
 
-    const book = await db.collection('books').findOne({
-      _id: new ObjectId(body.bookId),
+    const book = await db.collection('book_catalog').findOne({
+      bookId: body.bookId,
     });
 
     if (!book) {
@@ -89,6 +90,14 @@ export class WarehouseController extends Controller {
       body.shelf,
       body.numberOfBooks
     );
+
+    const copies = await warehouse.getCopies(body.bookId);
+    const totalStock = Object.values(copies).reduce(
+      (total, count) => total + count,
+      0
+    );
+
+    await publishBookStocked(body.bookId, totalStock);
 
     this.setStatus(204);
   }
